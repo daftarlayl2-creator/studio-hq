@@ -52,7 +52,7 @@ h1{margin:0;font-size:21px;font-weight:800;background:linear-gradient(135deg,#ff
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 const T=THREE,view=document.getElementById("view"),panel=document.getElementById("panel"),hint=document.getElementById("hint");
-const bi=document.getElementById("bi"),bo=document.getElementById("bo"),br=document.getElementById("br"),bp=document.getElementById("bp"),bs=document.getElementById("bs");
+var bi=document.getElementById("bi"),bo=document.getElementById("bo"),br=document.getElementById("br"),bp=document.getElementById("bp"),bs=document.getElementById("bs");
 const R=new T.WebGLRenderer({antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,2));view.prepend(R.domElement);
 const sc=new T.Scene();sc.background=new T.Color(0x07090c);sc.fog=new T.Fog(0x07090c,50,120);
 const cam=new T.PerspectiveCamera(36,1,.1,200);
