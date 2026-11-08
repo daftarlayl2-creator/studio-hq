@@ -11,6 +11,14 @@ const cameraLabel=document.querySelector("#cameraLabel");
 const positionLabel=document.querySelector("#positionLabel");
 const fpsLabel=document.querySelector("#fpsLabel");
 const crosshair=document.querySelector("#crosshair");
+const elevatorPanel=document.createElement("section");
+elevatorPanel.className="elevator-panel hidden";
+elevatorPanel.setAttribute("aria-label","Elevator floor selector");
+elevatorPanel.innerHTML='<p class="eyebrow">MOUNADEV HQ · ELEVATOR</p><h2>Select a floor</h2><div class="floor-options"><button data-floor="0">00 <span>Reception</span></button><button data-floor="1">01 <span>Technology</span></button><button data-floor="2">02 <span>Business</span></button><button data-floor="3">03 <span>Executive</span></button><button data-floor="4">R <span>Rooftop</span></button></div><p class="elevator-hint">Press 0–4 or choose a destination. Esc closes.</p>';
+document.querySelector("#app").appendChild(elevatorPanel);
+const floorNames=["GROUND · RECEPTION","01 · TECHNOLOGY","02 · BUSINESS","03 · EXECUTIVE","ROOFTOP"];
+const floorHeights=[0,4.29,8.49,12.69,17.02];
+let currentFloor=0;
 
 if(!window.THREE){notice.textContent="Three.js could not load. Check the local lib/three.min.js file.";throw new Error("Three.js unavailable");}
 const THREE=window.THREE;
@@ -88,15 +96,40 @@ for(const x of [-7,-2,3,8]){box(2.1,.045,.22,glow,x,3.72,0);box(.045,.045,1.5,go
 for(const z of [-6,0,6])box(7,.012,.035,goldMat,0,.015,z);
 const buildingLayout=createBuilding(THREE,scene);
 const player=createPlayer(THREE,scene,camera);
+function selectFloor(index){
+ if(!Number.isInteger(index)||index<0||index>4)return;
+ currentFloor=index;player.setFloor(floorHeights[index],9.8,0);
+ elevatorPanel.classList.add("hidden");
+ notice.textContent="Arrived · "+floorNames[index];
+}
+function toggleElevator(){
+ if(!active)return;
+ const p=player.position;
+ const distance=Math.hypot(p.x-9.8,p.z);
+ if(distance>2.6){notice.textContent="Find the elevator near the east side of the building";return;}
+ elevatorPanel.classList.toggle("hidden");
+ if(!elevatorPanel.classList.contains("hidden"))notice.textContent="Elevator ready · choose a floor";
+}
+elevatorPanel.querySelectorAll("[data-floor]").forEach(button=>button.addEventListener("click",()=>selectFloor(Number(button.dataset.floor))));
 let active=false,last=performance.now(),frameCount=0,fpsStart=last;
 function setCameraMode(mode){player.setCameraMode(mode);cameraLabel.textContent=mode==="first"?"FIRST PERSON":"THIRD PERSON";cameraButton.textContent=mode==="first"?"1P":"3P";crosshair.classList.toggle("visible",mode==="first"&&active);}
 function resize(){const w=mount.clientWidth||innerWidth,h=mount.clientHeight||innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);}
 window.addEventListener("resize",resize);resize();
-startButton.addEventListener("click",()=>{active=true;intro.classList.add("hidden");notice.textContent="Arrow keys move · Mouse look · V change view";renderer.domElement.focus();if(renderer.domElement.requestPointerLock&&matchMedia("(pointer:fine)").matches)renderer.domElement.requestPointerLock();});
+startButton.addEventListener("click",()=>{active=true;intro.classList.add("hidden");notice.textContent="Arrow keys move · Mouse look · E elevator · V change view";renderer.domElement.focus();if(renderer.domElement.requestPointerLock&&matchMedia("(pointer:fine)").matches)renderer.domElement.requestPointerLock();});
 cameraButton.addEventListener("click",()=>setCameraMode(player.cameraMode==="first"?"third":"first"));
 resetButton.addEventListener("click",()=>{player.reset();notice.textContent="Position reset";});
 document.addEventListener("pointerlockchange",()=>{if(active&&document.pointerLockElement!==renderer.domElement)notice.textContent="Mouse released · click and drag to look";});
-document.addEventListener("keydown",e=>{if(e.code==="KeyV")setCameraMode(player.cameraMode==="first"?"third":"first");if(e.code==="Escape"&&active)notice.textContent="Mouse released · click and drag to look";});
+document.addEventListener("keydown",e=>{
+ if(e.code==="KeyV"&&!e.repeat)setCameraMode(player.cameraMode==="first"?"third":"first");
+ if(e.code==="KeyE"&&!e.repeat)toggleElevator();
+ if(elevatorPanel.classList.contains("hidden")===false&&["Digit0","Digit1","Digit2","Digit3","Digit4"].includes(e.code)){
+  selectFloor(Number(e.code.slice(-1)));
+ }
+ if(e.code==="Escape"&&active){
+  if(!elevatorPanel.classList.contains("hidden"))elevatorPanel.classList.add("hidden");
+  notice.textContent="Mouse released · click and drag to look";
+ }
+});
 renderer.domElement.addEventListener("click",()=>{if(active&&document.pointerLockElement!==renderer.domElement&&renderer.domElement.requestPointerLock&&matchMedia("(pointer:fine)").matches)renderer.domElement.requestPointerLock();});
-function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;if(active)player.update(dt);renderer.render(scene,camera);frameCount++;if(now-fpsStart>1000){fpsLabel.textContent=Math.round(frameCount*1000/(now-fpsStart))+" FPS";frameCount=0;fpsStart=now;}const p=player.position;positionLabel.textContent="X "+p.x.toFixed(1)+" · Z "+p.z.toFixed(1);}
+function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;if(active)player.update(dt);renderer.render(scene,camera);frameCount++;if(now-fpsStart>1000){fpsLabel.textContent=Math.round(frameCount*1000/(now-fpsStart))+" FPS";frameCount=0;fpsStart=now;}const p=player.position;positionLabel.textContent=floorNames[currentFloor]+" · X "+p.x.toFixed(1)+" · Z "+p.z.toFixed(1);}
 requestAnimationFrame(animate);setCameraMode("third");
