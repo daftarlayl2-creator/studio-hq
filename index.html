@@ -37,6 +37,37 @@ h1{margin:0;font-size:21px;font-weight:800;background:linear-gradient(135deg,#ff
 .legend{display:flex;gap:12px;margin:0 18px 12px;font-size:12px;color:var(--muted)}
 .legend span{display:flex;align-items:center;gap:4px}
 .legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+/* Task activity and detail modal */
+.task-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 10px}
+.task-head h3{margin:0;font-size:14px;letter-spacing:.02em}
+.task-count{font:500 11px "IBM Plex Mono",monospace;color:var(--muted)}
+.task-list{display:grid;gap:9px}
+.task-card{width:100%;text-align:left;display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:11px;align-items:start;padding:12px;border:1px solid var(--line);border-radius:11px;background:linear-gradient(135deg,#191f26,#11161c);color:var(--ink);cursor:pointer;transition:border-color .18s,transform .18s,background .18s}
+.task-card:hover{transform:translateY(-1px);background:#1b232b}
+.task-card.done{border-left:3px solid var(--up)}.task-card.progress{border-left:3px solid var(--warn)}.task-card.failed{border-left:3px solid var(--danger)}
+.task-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;background:var(--muted)}
+.task-card.done .task-dot{background:var(--up);box-shadow:0 0 10px #3ad17a66}
+.task-card.progress .task-dot{background:var(--warn);box-shadow:0 0 10px #f0b64a66}
+.task-card.failed .task-dot{background:var(--danger);box-shadow:0 0 10px #ff555566}
+.task-copy{min-width:0}.task-title{font-size:13px;line-height:1.5;font-weight:700;overflow-wrap:anywhere}
+.task-sub{font-size:11px;color:var(--muted);margin-top:5px}
+.task-state{font-size:10px;font-weight:800;letter-spacing:.04em;padding:4px 7px;border-radius:99px;white-space:nowrap}
+.task-card.done .task-state{color:var(--up);background:#3ad17a16}
+.task-card.progress .task-state{color:var(--warn);background:#f0b64a18}
+.task-card.failed .task-state{color:var(--danger);background:#ff555518}
+.task-empty{padding:16px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);font-size:13px;text-align:center}
+#taskModal{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;padding:18px;background:#020407c9;backdrop-filter:blur(9px)}
+#taskModal.open{display:flex}
+.task-modal-card{width:min(680px,100%);max-height:min(82vh,760px);overflow:auto;background:#11171e;border:1px solid #39434d;border-radius:18px;box-shadow:0 24px 90px #000b}
+.task-modal-top{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px;background:#11171ef2;border-bottom:1px solid var(--line);backdrop-filter:blur(10px)}
+.task-modal-top h3{margin:0;font-size:15px}.task-modal-close{border:1px solid var(--line);background:#1c242d;color:var(--ink);width:34px;height:34px;border-radius:9px;font-size:20px;cursor:pointer}
+.task-modal-body{padding:18px}.task-modal-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.task-modal-meta span{font-size:11px;padding:5px 9px;border-radius:99px;background:#202a34;color:#c4cdd5}
+.task-modal-description{font-size:14px;line-height:1.8;white-space:normal;overflow-wrap:anywhere;color:#e6edf2}
+.task-modal-description a{color:#65cfff;text-decoration:none}.task-modal-description a:hover{text-decoration:underline}
+@media(max-width:600px){.task-card{grid-template-columns:8px minmax(0,1fr);}.task-state{grid-column:2;justify-self:start}.task-modal-body{padding:14px}}
+
 </style>
 </head>
 <body>
@@ -49,6 +80,14 @@ h1{margin:0;font-size:21px;font-weight:800;background:linear-gradient(135deg,#ff
 <div class="legend"><span><i style="background:#3ad17a"></i>Working</span><span><i style="background:#f0b64a"></i>Waiting</span><span><i style="background:#6c7780"></i>Idle</span></div>
 <div class="panel" id="panel"></div>
 <p class="note">Everything on this page comes from your Supabase database, nothing is simulated. Tap an agent for details, drag to rotate, pinch to zoom. Agents sit while they work and walk to the lounge when idle.</p>
+
+<div id="taskModal" aria-hidden="true">
+  <section class="task-modal-card" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+    <div class="task-modal-top"><h3 id="taskModalTitle">Task details</h3><button class="task-modal-close" id="taskModalClose" aria-label="Close">×</button></div>
+    <div class="task-modal-body" id="taskModalBody"></div>
+  </section>
+</div>
+
 <script src="lib/three.min.js" onerror="var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';document.head.appendChild(s);"></script>
 <script>
 const T=THREE,view=document.getElementById("view"),panel=document.getElementById("panel"),hint=document.getElementById("hint");
@@ -121,9 +160,33 @@ try{CFG=JSON.parse(localStorage.getItem("shq")||"null")}catch(e){}
 function label(a){const c=a.lc.getContext("2d"),w=a.status==="working",wt=a.status==="waiting";c.clearRect(0,0,256,96);c.fillStyle="rgba(10,12,16,.92)";c.beginPath();c.roundRect?c.roundRect(4,10,248,76,16):c.rect(4,10,248,76);c.fill();c.lineWidth=5;c.strokeStyle=a===cur?"#ffc400":a.css;c.stroke();c.fillStyle=w?"#3ad17a":wt?"#f0b64a":"#6c7780";c.beginPath();c.arc(30,38,9,0,7);c.fill();c.fillStyle="#fff";c.font="800 28px Archivo,sans-serif";c.fillText(a.n,50,46);c.fillStyle="#aab4bd";c.font="500 20px Archivo,sans-serif";c.fillText(a.r+"  "+(w?a.pr+"%":wt?"Waiting":"Idle"),22,76);a.lt.needsUpdate=true}
 const ago=d=>{if(!d)return"never";const s=Math.round((Date.now()-d)/1000);return s<60?"just now":s<3600?Math.floor(s/60)+" min ago":s<86400?Math.floor(s/3600)+" h ago":Math.floor(s/86400)+" d ago"};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function draw(){if(!CFG||editing){panel.innerHTML='<h2>Connect your data</h2><p class="meta">Paste your Supabase Project URL and the anon (public) key. They stay in this browser only.</p><input id="u" placeholder="https://xxxx.supabase.co" value="'+esc(CFG?CFG.url:"")+'"><input id="k" placeholder="anon or publishable key" value="'+esc(CFG?CFG.key:"")+'"><button class="btn" id="sv">Save and connect</button>';document.getElementById("sv").onclick=()=>{const u=document.getElementById("u").value.trim().replace(/\/+$/,""),k=document.getElementById("k").value.trim();if(!/^https:\/\//.test(u)||!k){hint.textContent="Enter a valid https URL and a key";return}CFG={url:u,key:k};try{localStorage.setItem("shq",JSON.stringify(CFG))}catch(e){}editing=false;draw();pull()};return}if(!cur){panel.innerHTML='<h2>Pick an agent</h2><p class="meta">Tap anyone in the studio to see what they are working on.</p>';return}const st=cur.status,s=st==="working"?"up":"warn";panel.innerHTML='<h2><span>'+cur.n+'</span><span class="badge">'+cur.r+'</span></h2><p class="meta">'+(st==="working"?"Working":st==="waiting"?"Waiting":"Idle")+", updated "+ago(cur.upd)+'</p><div class="task">'+(cur.task?esc(cur.task):"No task right now")+'</div><div class="prog"><i class="'+s+'" style="width:'+cur.pr+'%"></i></div><ul class="log">'+(cur.log.length?cur.log.map(l=>'<li><span>'+esc(l.m)+'</span><small>'+l.t+'</small></li>').join(""):'<li><span>No finished tasks yet</span></li>')+'</ul>'}
+function taskTone(kind){const k=String(kind||"").toLowerCase();return ["failed","fail","error","rejected","cancelled","canceled"].includes(k)?"failed":k==="done"||k==="completed"?"done":"progress"}
+function taskLabel(kind){const t=taskTone(kind);return t==="done"?"COMPLETED":t==="failed"?"FAILED":"IN PROGRESS"}
+function openTaskDetails(index){
+  if(!cur)return;
+  const item=index<0?{m:cur.task||"No current task description",kind:cur.status==="working"?"working":cur.status==="waiting"?"waiting":"info",t:cur.upd?new Date(cur.upd).toLocaleString():"Current task"}:cur.log[index];
+  if(!item)return;
+  const tone=taskTone(item.kind),modal=document.getElementById("taskModal"),body=document.getElementById("taskModalBody");
+  const linked=String(item.m||"").split(/(https?:\/\/[^\\s]+)/g).map(part=>/^https?:\/\//i.test(part)?'<a href="'+esc(part)+'" target="_blank" rel="noopener noreferrer">'+esc(part)+'</a>':esc(part).replace(/\n/g,"<br>")).join("");
+  document.getElementById("taskModalTitle").textContent=index<0?"Current task":"Task details";
+  body.innerHTML='<div class="task-modal-meta"><span>'+taskLabel(item.kind)+'</span><span>'+esc(cur.n)+' · '+esc(cur.r)+'</span><span>'+esc(item.t||"")+'</span></div><div class="task-modal-description">'+linked+'</div>';
+  modal.classList.add("open");modal.setAttribute("aria-hidden","false");
+}
+function closeTaskDetails(){const modal=document.getElementById("taskModal");modal.classList.remove("open");modal.setAttribute("aria-hidden","true")}
+document.getElementById("taskModalClose").onclick=closeTaskDetails;
+document.getElementById("taskModal").addEventListener("click",e=>{if(e.target.id==="taskModal")closeTaskDetails()});
+addEventListener("keydown",e=>{if(e.key==="Escape")closeTaskDetails()});
+function draw(){
+ if(!CFG||editing){panel.innerHTML='<h2>Connect your data</h2><p class="meta">Paste your Supabase Project URL and the anon (public) key. They stay in this browser only.</p><input id="u" placeholder="https://xxxx.supabase.co" value="'+esc(CFG?CFG.url:"")+'"><input id="k" placeholder="anon or publishable key" value="'+esc(CFG?CFG.key:"")+'"><button class="btn" id="sv">Save and connect</button>';document.getElementById("sv").onclick=()=>{const u=document.getElementById("u").value.trim().replace(/\/+$/,""),k=document.getElementById("k").value.trim();if(!/^https:\/\//.test(u)||!k){hint.textContent="Enter a valid https URL and a key";return}CFG={url:u,key:k};try{localStorage.setItem("shq",JSON.stringify(CFG))}catch(e){}editing=false;draw();pull()};return}
+ if(!cur){panel.innerHTML='<h2>Pick an agent</h2><p class="meta">Tap anyone in the studio to see their tasks and activity.</p>';return}
+ const st=cur.status,s=st==="working"?"up":"warn";
+ const current=cur.task?'<button class="task-card '+(st==="working"||st==="waiting"?"progress":"done")+'" data-task-index="-1"><span class="task-dot"></span><span class="task-copy"><span class="task-title">'+esc(cur.task)+'</span><span class="task-sub">Current task · '+esc(ago(cur.upd))+'</span></span><span class="task-state">'+(st==="working"?"IN PROGRESS":st==="waiting"?"WAITING":"CURRENT")+'</span></button>':"";
+ const history=cur.log.length?cur.log.map((l,i)=>{const tone=taskTone(l.kind);return '<button class="task-card '+tone+'" data-task-index="'+i+'"><span class="task-dot"></span><span class="task-copy"><span class="task-title">'+esc(l.m)+'</span><span class="task-sub">'+esc(l.t||"")+'</span></span><span class="task-state">'+taskLabel(l.kind)+'</span></button>'}).join(""):'<div class="task-empty">No task history recorded yet.</div>';
+ panel.innerHTML='<h2><span>'+esc(cur.n)+'</span><span class="badge">'+esc(cur.r)+'</span></h2><p class="meta">'+(st==="working"?"Working":st==="waiting"?"Waiting": "Idle")+', updated '+ago(cur.upd)+'</p><div class="task">'+(cur.task?esc(cur.task):"No current task")+'</div><div class="prog"><i class="'+s+'" style="width:'+cur.pr+'%"></i></div><div class="task-head"><h3>Task history</h3><span class="task-count">'+cur.log.length+' RECORDS</span></div><div class="task-list" id="taskList">'+current+history+'</div>';
+ panel.querySelectorAll("[data-task-index]").forEach(el=>el.addEventListener("click",()=>openTaskDetails(Number(el.dataset.taskIndex))));
+}
 const hdr=()=>({apikey:CFG.key,Authorization:"Bearer "+CFG.key});
-async function pull(){if(!CFG)return;try{const [a,l]=await Promise.all([fetch(CFG.url+"/rest/v1/studio_agents_public?select=*",{headers:hdr()}),fetch(CFG.url+"/rest/v1/studio_agent_log_public?select=*&kind=eq.done&order=created_at.desc&limit=400",{headers:hdr()})]);if(!a.ok||!l.ok)throw new Error("http");const ag=await a.json(),lg=await l.json(),m0=new Date();m0.setHours(0,0,0,0);const hrs=Array(24).fill(0);let tot=0;lg.forEach(r=>{const d=new Date(r.created_at);if(d>=m0){tot++;hrs[d.getHours()]++}});S.forEach(a=>{const r=ag.find(x=>x.id===a.id);if(r){a.status=r.status;a.task=r.task||"";a.pr=r.progress||0;a.upd=new Date(r.updated_at)}a.log=lg.filter(x=>x.agent_id===a.id).slice(0,4).map(x=>({m:x.message,t:new Date(x.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}));label(a)});const wk=S.filter(o=>o.status==="working").length,wt=S.filter(o=>o.status==="waiting").length;const id=S.length-wk-wt;k1.textContent=tot;k2.textContent=wk;k3.textContent=wt;k4.textContent=id;drawScreens(tot,hrs,wk,wt,id);hint.textContent="Live, updated "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"});if(!editing)draw()}catch(e){hint.textContent="Can't reach Supabase, check the URL, the key and that setup.sql ran"}}S.forEach(label);drawScreens(0,Array(24).fill(0),0,0,27);draw();pull();var pullInterval=setInterval(pull,3000);
+async function pull(){if(!CFG)return;try{const [a,l]=await Promise.all([fetch(CFG.url+"/rest/v1/studio_agents_public?select=*",{headers:hdr()}),fetch(CFG.url+"/rest/v1/studio_agent_log_public?select=*&order=created_at.desc&limit=400",{headers:hdr()})]);if(!a.ok||!l.ok)throw new Error("http");const ag=await a.json(),lg=await l.json(),m0=new Date();m0.setHours(0,0,0,0);const hrs=Array(24).fill(0);let tot=0;lg.forEach(r=>{const d=new Date(r.created_at);if(d>=m0){tot++;hrs[d.getHours()]++}});S.forEach(a=>{const r=ag.find(x=>x.id===a.id);if(r){a.status=r.status;a.task=r.task||"";a.pr=r.progress||0;a.upd=new Date(r.updated_at)}a.log=lg.filter(x=>x.agent_id===a.id).map(x=>({m:x.message,kind:x.kind,t:new Date(x.created_at).toLocaleString()}));label(a)});const wk=S.filter(o=>o.status==="working").length,wt=S.filter(o=>o.status==="waiting").length;const id=S.length-wk-wt;k1.textContent=tot;k2.textContent=wk;k3.textContent=wt;k4.textContent=id;drawScreens(tot,hrs,wk,wt,id);hint.textContent="Live, updated "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"});if(!editing)draw()}catch(e){hint.textContent="Can't reach Supabase, check the URL, the key and that setup.sql ran"}}S.forEach(label);drawScreens(0,Array(24).fill(0),0,0,27);draw();pull();var pullInterval=setInterval(pull,3000);
 function walkTo(a,dt){const p=a.path[0],g=a.g,dx=p.x-g.position.x,dz=p.z-g.position.z,d=Math.hypot(dx,dz);if(d<.12){a.path.shift();return}g.rotation.y=Math.atan2(dx,dz);const s=Math.min(d,2.4*dt);g.position.x+=dx/d*s;g.position.z+=dz/d*s}
 function pose(a,t,sit,walk,busy){const sw=walk?Math.sin(t*9)*.7:0;a.lL.rotation.x=sit?-1.5:sw;a.lR.rotation.x=sit?-1.5:-sw;const k=sit&&busy?.12:0;a.aL.rotation.x=sit?-1.1+Math.sin(t*14+a.ph)*k:-sw;a.aR.rotation.x=sit?-1.1+Math.cos(t*13+a.ph)*k:sw;a.g.position.y=sit?-.12:Math.abs(Math.sin(t*9))*(walk?.05:0)}
 function back(a){a.path=[new T.Vector3(5.6,0,0),new T.Vector3(a.hx,0,0),a.home.clone()];a.mode="back"}
