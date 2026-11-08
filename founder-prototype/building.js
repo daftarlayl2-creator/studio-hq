@@ -19,7 +19,7 @@ export function createBuilding(THREE, scene) {
   for(let i=0;i<levels.length;i++){
     const {y,name,rooms}=levels[i];
     // Slab and restrained bronze edge reveal.
-    addBox(23.7,.18,15.7,floor,0,y,0);
+    addBox(23.7,.18,15.7,floor,0,y-.09,0);
     addBox(23.7,.045,.08,bronze,0,y+.11,-7.82);
     // Rear and side walls; south face remains open in this cutaway preview.
     addBox(23.7,3.45,.22,stone,0,y+1.82,-7.82);
@@ -64,13 +64,13 @@ export function createBuilding(THREE, scene) {
     const baseY=level*4.2;
     for(let i=0;i<12;i++){
       addBox(1.05,.16,.34,graphite,-9.0,baseY+.16+i*.175,-2.85+i*.29);
-      addBox(1.05,.16,.34,graphite,-7.55,baseY+2.26+i*.175,.34-i*.29);
+      addBox(1.05,.16,.34,graphite,-7.55,baseY+2.12+i*(1.92/11),.34-i*.29);
     }
     addBox(2.5,.16,1.25,wood,-8.25,baseY+2.12,.55);
   }
   // Rooftop terrace and parapet, with a shaded pergola.
-  const roofY=16.9;
-  addBox(23.7,.2,15.7,floor,0,roofY,0);
+  const roofY=16.8;
+  addBox(23.7,.2,15.7,floor,0,roofY-.1,0);
   addBox(23.7,1.05,.22,stone,0,roofY+.58,-7.82);
   addBox(23.7,1.05,.22,stone,0,roofY+.58,7.82);
   addBox(.22,1.05,15.7,stone,-11.82,roofY+.58,0);
