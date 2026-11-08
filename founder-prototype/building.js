@@ -82,5 +82,36 @@ export function createBuilding(THREE, scene) {
     addBox(.72,.08,.72,mat(0x526653),x,roofY+.7,5.1);
   }
   sign("ROOFTOP TERRACE",0,roofY+2.0,-7.68);
-  return {levels:levels.map((l,i)=>({index:i+1,name:l.name,elevation:l.y})),roofElevation:roofY};
+  // Automatic double-leaf doors at the central passage of each upper floor.
+  const automaticDoors=[];
+  for(let i=0;i<levels.length;i++){
+    const y=levels[i].y;
+    const frame=mat(0x292e2b),panel=mat(0x66523e),inlay=mat(0x9b8059,.55,.2);
+    addBox(2.05,.12,.18,bronze,0,y+2.42,-.65);
+    addBox(.12,2.4,.18,bronze,-1.0,y+1.2,-.65);
+    addBox(.12,2.4,.18,bronze,1.0,y+1.2,-.65);
+    const makeLeaf=(hingeX,side)=>{
+      const pivot=new THREE.Group();pivot.position.set(hingeX,y,-.65);scene.add(pivot);
+      const leaf=addBox(.94,2.18,.10,panel,0,0,0);
+      // Re-parent the door slab under its hinge so it can swing open.
+      scene.remove(leaf);pivot.add(leaf);leaf.position.set(side*.47,1.12,0);
+      const stripe=addBox(.045,1.72,.025,inlay,0,0,0);
+      scene.remove(stripe);pivot.add(stripe);stripe.position.set(side*.47,1.12,.066);
+      const handle=cylinder(.035,.035,.12,inlay,0,0,0,8);
+      scene.remove(handle);pivot.add(handle);handle.position.set(side*.78,1.05,.09);handle.rotation.x=Math.PI/2;
+      return pivot;
+    };
+    const left=makeLeaf(-.94,1),right=makeLeaf(.94,-1);
+    automaticDoors.push({y,left,right,open:0});
+  }
+  const updateDoors=(position,dt)=>{
+    for(const door of automaticDoors){
+      const nearby=Math.abs(position.y-door.y)<2.5&&Math.hypot(position.x,position.z+.65)<2.4;
+      const target=nearby?1:0;
+      door.open+=((target-door.open)*Math.min(1,dt*5));
+      door.left.rotation.y=door.open*-.95;
+      door.right.rotation.y=door.open*.95;
+    }
+  };
+  return {levels:levels.map((l,i)=>({index:i+1,name:l.name,elevation:l.y})),roofElevation:roofY,updateDoors};
 }
