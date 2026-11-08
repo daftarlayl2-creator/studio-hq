@@ -48,6 +48,16 @@ export function createPlayer(THREE, scene, camera) {
     if(x < -11.25+radius || x > 11.25-radius || z < -7.25+radius || z > 7.25-radius) return true;
     return activeObstacles.some(o=>x+radius>o.minX&&x-radius<o.maxX&&z+radius>o.minZ&&z-radius<o.maxZ);
   }
+  function walkableHeight(x,z){
+    // Two switchback ramp surfaces follow the visible stair flights.
+    if(x>=-9.58&&x<=-8.42&&z>=-3.1&&z<=.55)
+      return floorHeight+.24+((z+3.1)/3.65)*2.0;
+    if(x>=-8.52&&x<=-7.98&&z>=.2&&z<=.9)
+      return floorHeight+2.24;
+    if(x>=-8.12&&x<=-6.98&&z>=-3.1&&z<=.55)
+      return floorHeight+2.34+((.55-z)/3.65)*1.93;
+    return floorHeight;
+  }
   function pointerMove(e){
     if(document.pointerLockElement===canvas){yaw-=e.movementX*.0022;pitch=clamp(pitch+e.movementY*.0022,-1.15,1.15);}
     else if(dragging){yaw-=(e.clientX-lastX)*.006;pitch=clamp(pitch+(e.clientY-lastY)*.006,-1.15,1.15);lastX=e.clientX;lastY=e.clientY;}
@@ -84,9 +94,14 @@ export function createPlayer(THREE, scene, camera) {
       walkPhase+=dt*(speed>3?12:8);
     }
     if(keys.has("Space")&&grounded){verticalVelocity=5.0;grounded=false;}
-    verticalVelocity-=13.5*dt;
-    group.position.y+=verticalVelocity*dt;
-    if(group.position.y<=floorHeight){group.position.y=floorHeight;verticalVelocity=0;grounded=true;}
+    const supportY=walkableHeight(group.position.x,group.position.z);
+    if(group.position.y<=supportY+.16&&verticalVelocity<=0){
+      group.position.y=supportY;verticalVelocity=0;grounded=true;
+    }else{
+      verticalVelocity-=13.5*dt;
+      group.position.y+=verticalVelocity*dt;
+      if(group.position.y<supportY){group.position.y=supportY;verticalVelocity=0;grounded=true;}
+    }
     const swing=moving?Math.sin(walkPhase)*.16:0;
     leftArm.rotation.x=swing;
     rightArm.rotation.x=-swing;
