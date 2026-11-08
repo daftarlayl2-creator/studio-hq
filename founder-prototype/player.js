@@ -68,14 +68,15 @@ export function createPlayer(THREE, scene, camera) {
   function walkableHeight(x,z){
     // Only expose the next deck when the avatar is physically at its stair landing.
     const candidates=[floorHeight];
-    const onFirstFlight=x>=-9.58&&x<=-8.42&&z>=-3.1&&z<=.55;
-    const onLanding=x>=-9.52&&x<=-6.98&&z>=-.08&&z<=1.18;
-    const onSecondFlight=x>=-8.12&&x<=-6.98&&z>=-2.85&&z<=.34;
+    const onFirstFlight=x>=-9.58&&x<=-8.42&&z>=-2.99&&z<=.49;
+    const onLanding=x>=-9.52&&x<=-6.98&&z>=.36&&z<=1.18;
+    const onSecondFlight=x>=-8.12&&x<=-6.98&&z>=-2.99&&z<=.49;
     for(let level=0;level<4;level++){
       const base=floorHeight+level*4.2;
-      if(onFirstFlight)candidates.push(base+.24+((z+3.1)/3.65)*1.93);
+      // Match the top surfaces of the 12 physical treads (0.29m spacing, 0.175m rise).
+      if(onFirstFlight)candidates.push(base+.24+clamp((z+2.85)/.29,0,11)*.175);
       if(onLanding)candidates.push(base+2.2);
-      if(onSecondFlight)candidates.push(base+2.26+((.34-z)/3.19)*1.925);
+      if(onSecondFlight)candidates.push(base+2.34+clamp((.34-z)/.29,0,11)*.175);
       const nextDeck=base+4.2;
       if(group.position.y>=nextDeck-.58&&group.position.y<=nextDeck+.58)
         candidates.push(nextDeck);
