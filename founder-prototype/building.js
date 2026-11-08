@@ -4,6 +4,7 @@ export function createBuilding(THREE, scene) {
   const mat=(color,roughness=.9,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
   const stone=mat(0x777873),graphite=mat(0x303735),floor=mat(0x383b38),wood=mat(0x604a38),bronze=mat(0xa88755,.58,.25),glass=new THREE.MeshStandardMaterial({color:0x78939a,roughness:.3,transparent:true,opacity:.34});
   const addBox=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);scene.add(o);return o;};
+  const cylinder=(rt,rb,h,m,x,y,z,segments=10)=>{const o=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,segments),m);o.position.set(x,y,z);scene.add(o);return o;};
   const sign=(title,x,y,z)=>{
     const c=document.createElement("canvas");c.width=512;c.height=128;const g=c.getContext("2d");
     g.fillStyle="#202625";g.fillRect(0,0,512,128);g.fillStyle="#a88755";g.fillRect(0,0,8,128);
