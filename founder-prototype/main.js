@@ -18,6 +18,16 @@ elevatorPanel.innerHTML='<p class="eyebrow">MOUNADEV HQ · ELEVATOR</p><h2>Selec
 document.querySelector("#app").appendChild(elevatorPanel);
 const floorNames=["GROUND · RECEPTION","01 · TECHNOLOGY","02 · BUSINESS","03 · EXECUTIVE","ROOFTOP"];
 const floorHeights=[0,4.29,8.49,12.69,17.02];
+const rect=(minX,maxX,minZ,maxZ)=>({minX,maxX,minZ,maxZ});
+const upperFloorCollision=[
+ rect(-3.98,-3.82,-6.95,-.85),rect(3.82,3.98,-6.95,-.85),
+ rect(-3.9,-.9,-.73,-.57),rect(.9,3.9,-.73,-.57),
+ rect(5.25,9.55,-5.2,-5.0),
+ ...[-8.2,-5.9,5.9,8.2].map(x=>rect(x-.8,x+.8,2.55,3.65)),
+ // Elevator shaft: enclosed sides with a clear west-facing landing opening.
+ rect(10.7,10.9,-1.3,1.3),rect(8.7,10.9,-1.35,-.58),rect(8.7,10.9,.58,1.35),
+ rect(8.7,8.9,-1.3,-.58),rect(8.7,8.9,.58,1.3)
+];
 let currentFloor=0;
 
 if(!window.THREE){notice.textContent="Three.js could not load. Check the local lib/three.min.js file.";throw new Error("Three.js unavailable");}
@@ -98,7 +108,7 @@ const buildingLayout=createBuilding(THREE,scene);
 const player=createPlayer(THREE,scene,camera);
 function selectFloor(index){
  if(!Number.isInteger(index)||index<0||index>4)return;
- currentFloor=index;player.setFloor(floorHeights[index],9.8,0);
+ currentFloor=index;player.setFloor(floorHeights[index],9.8,0,index===0?undefined:upperFloorCollision);
  elevatorPanel.classList.add("hidden");
  notice.textContent="Arrived · "+floorNames[index];
 }
