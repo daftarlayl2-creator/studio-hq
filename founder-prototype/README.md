@@ -21,8 +21,8 @@ Open `/founder-prototype/` on the same static hosting preview that serves the re
 
 - Ground-floor furniture collision and a central passage through the glass divider.
 - Separate collision maps for the ground floor and upper floors.
-- An elevator landing with a west-facing exit and floor destinations aligned to the building decks (0, 4.2, 8.4, 12.6, and 16.9 metres).
-- Switchback stair support surfaces aligned to the visible stair flights and landings, with guarded deck snapping to avoid unrelated floor jumps.
+- An elevator landing with a west-facing exit and floor destinations aligned to the building decks (0, 4.2, 8.4, 12.6, and 16.8 metres).
+- Switchback stair support surfaces aligned to the visible stair flights and landings, with guarded deck snapping to avoid unrelated floor jumps. Upper-floor and rooftop slab top surfaces align with the player/elevator elevations.
 - Upper-floor central passageways with proximity-triggered double-door animation.
 - A lightweight procedural founder stand-in with basic face and clothing details.
 
