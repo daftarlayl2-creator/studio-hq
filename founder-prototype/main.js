@@ -28,6 +28,19 @@ const upperFloorCollision=[
  rect(10.7,10.9,-1.3,1.3),rect(8.7,10.9,-1.35,-.58),rect(8.7,10.9,.58,1.35),
  rect(8.7,8.9,-1.3,-.58),rect(8.7,8.9,.58,1.3)
 ];
+const elevatorCollision=[
+ rect(10.7,10.9,-1.3,1.3),rect(8.7,10.9,-1.35,-.58),rect(8.7,10.9,.58,1.35),
+ rect(8.7,8.9,-1.3,-.58),rect(8.7,8.9,.58,1.3)
+];
+const groundCollision=[
+ // Existing reception / lounge / meeting furniture collision footprints.
+ rect(-7.8,-2.2,-5.55,-3.85),rect(4.0,6.4,-5.5,-4.25),
+ rect(7.25,9.55,-5.35,-4.35),rect(6.1,7.5,-3.25,-1.95),
+ rect(7.35,8.65,3.35,4.65),rect(-8.65,-7.35,3.35,4.65),
+ rect(-1.35,1.35,4.0,5.4),rect(.35,3.85,1.1,2.9),
+ rect(-.32,-.08,-3.0,2.4),
+ ...elevatorCollision
+];
 let currentFloor=0;
 
 if(!window.THREE){notice.textContent="Three.js could not load. Check the local lib/three.min.js file.";throw new Error("Three.js unavailable");}
@@ -108,7 +121,7 @@ const buildingLayout=createBuilding(THREE,scene);
 const player=createPlayer(THREE,scene,camera);
 function selectFloor(index){
  if(!Number.isInteger(index)||index<0||index>4)return;
- currentFloor=index;player.setFloor(floorHeights[index],9.8,0,index===0?undefined:upperFloorCollision);
+ currentFloor=index;player.setFloor(floorHeights[index],9.8,0,index===0?groundCollision:upperFloorCollision);
  elevatorPanel.classList.add("hidden");
  notice.textContent="Arrived · "+floorNames[index];
 }
