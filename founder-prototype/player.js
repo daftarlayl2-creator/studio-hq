@@ -64,17 +64,19 @@ export function createPlayer(THREE, scene, camera) {
     return activeObstacles.some(o=>x+radius>o.minX&&x-radius<o.maxX&&z+radius>o.minZ&&z-radius<o.maxZ);
   }
   function walkableHeight(x,z){
-    // Select the nearest physical deck / stair tread across the stacked switchback flights.
+    // Only expose the next deck when the avatar is physically at its stair landing.
     const candidates=[floorHeight];
+    const onFirstFlight=x>=-9.58&&x<=-8.42&&z>=-3.1&&z<=.55;
+    const onLanding=x>=-9.52&&x<=-6.98&&z>=-.08&&z<=1.18;
+    const onSecondFlight=x>=-8.12&&x<=-6.98&&z>=-2.85&&z<=.34;
     for(let level=0;level<4;level++){
       const base=floorHeight+level*4.2;
-      candidates.push(base+4.2);
-      if(x>=-9.58&&x<=-8.42&&z>=-3.1&&z<=.55)
-        candidates.push(base+.24+((z+3.1)/3.65)*2.0);
-      if(x>=-9.5&&x<=-7.0&&z>=-.08&&z<=1.18)
-        candidates.push(base+2.2);
-      if(x>=-8.12&&x<=-6.98&&z>=-2.85&&z<=.34)
-        candidates.push(base+2.26+((.34-z)/3.19)*1.925);
+      if(onFirstFlight)candidates.push(base+.24+((z+3.1)/3.65)*1.93);
+      if(onLanding)candidates.push(base+2.2);
+      if(onSecondFlight)candidates.push(base+2.26+((.34-z)/3.19)*1.925);
+      const nextDeck=base+4.2;
+      if(group.position.y>=nextDeck-.58&&group.position.y<=nextDeck+.58)
+        candidates.push(nextDeck);
     }
     let nearest=candidates[0],distance=Math.abs(group.position.y-nearest);
     for(let i=1;i<candidates.length;i++){
