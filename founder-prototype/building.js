@@ -52,6 +52,16 @@ export function createBuilding(THREE, scene) {
   addBox(2.2,16.4,.12,glass,9.8,8.25,1.25);
   addBox(.12,16.4,2.5,glass,8.8,8.25,0);
   addBox(.12,16.4,2.5,glass,10.8,8.25,0);
+  // Switchback stair flights beside the lift core. These are visual greybox steps;
+  // walking / floor transitions are deliberately not enabled in this pass.
+  for(let level=0;level<4;level++){
+    const baseY=level*4.2;
+    for(let i=0;i<12;i++){
+      addBox(1.05,.16,.34,graphite,-9.0,baseY+.16+i*.175,-2.85+i*.29);
+      addBox(1.05,.16,.34,graphite,-7.55,baseY+2.26+i*.175,.34-i*.29);
+    }
+    addBox(2.5,.16,1.25,wood,-8.25,baseY+2.12,.55);
+  }
   // Rooftop terrace and parapet, with a shaded pergola.
   const roofY=16.9;
   addBox(23.7,.2,15.7,floor,0,roofY,0);
