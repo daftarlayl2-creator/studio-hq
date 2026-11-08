@@ -25,11 +25,11 @@ export function createPlayer(THREE, scene, camera) {
   makePart(new THREE.SphereGeometry(.045,7,6),skin,0,1.67,.18);
 
   const obstacles=[
-    {minX:-7.65,maxX:-2.35,minZ:-5.2,maxZ:-3.8},
-    {minX:3.55,maxX:6.45,minZ:-5.7,maxZ:-4.3},
+    {minX:-7.8,maxX:-2.2,minZ:-5.55,maxZ:-3.85},
+    {minX:4.0,maxX:6.4,minZ:-5.5,maxZ:-4.25},\n    {minX:7.25,maxX:9.55,minZ:-5.35,maxZ:-4.35},\n    {minX:6.1,maxX:7.5,minZ:-3.25,maxZ:-1.95},
     {minX:7.35,maxX:8.65,minZ:3.35,maxZ:4.65},
     {minX:-8.65,maxX:-7.35,minZ:3.35,maxZ:4.65},
-    {minX:-1.35,maxX:1.35,minZ:4.0,maxZ:5.4}
+    {minX:-1.35,maxX:1.35,minZ:4.0,maxZ:5.4},\n    {minX:0.35,maxX:3.85,minZ:1.1,maxZ:2.9},\n    {minX:-0.32,maxX:-0.08,minZ:-3.0,maxZ:2.4}
   ];
   const radius=.34;
   const keys=new Set();
