@@ -1,5 +1,5 @@
-// Multi-storey architectural greybox. Upper levels are a visual layout pass;
-// playable elevator/floor transitions are intentionally deferred until collision QA.
+// Multi-storey architectural greybox. Elevator floor selection is wired in the prototype;
+// stair traversal and upper-floor collision remain deferred until dedicated QA.
 export function createBuilding(THREE, scene) {
   const mat=(color,roughness=.9,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
   const stone=mat(0x777873),graphite=mat(0x303735),floor=mat(0x383b38),wood=mat(0x604a38),bronze=mat(0xa88755,.58,.25),glass=new THREE.MeshStandardMaterial({color:0x78939a,roughness:.3,transparent:true,opacity:.34});
