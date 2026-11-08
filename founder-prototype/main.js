@@ -157,5 +157,5 @@ document.addEventListener("keydown",e=>{
  }
 });
 renderer.domElement.addEventListener("click",()=>{if(active&&document.pointerLockElement!==renderer.domElement&&renderer.domElement.requestPointerLock&&matchMedia("(pointer:fine)").matches)renderer.domElement.requestPointerLock();});
-function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;if(active&&elevatorPanel.classList.contains("hidden"))player.update(dt);renderer.render(scene,camera);frameCount++;if(now-fpsStart>1000){fpsLabel.textContent=Math.round(frameCount*1000/(now-fpsStart))+" FPS";frameCount=0;fpsStart=now;}const p=player.position;positionLabel.textContent=floorNames[currentFloor]+" · X "+p.x.toFixed(1)+" · Z "+p.z.toFixed(1);}
+function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;if(active&&elevatorPanel.classList.contains("hidden"))player.update(dt);buildingLayout.updateDoors(player.position,dt);renderer.render(scene,camera);frameCount++;if(now-fpsStart>1000){fpsLabel.textContent=Math.round(frameCount*1000/(now-fpsStart))+" FPS";frameCount=0;fpsStart=now;}const p=player.position;positionLabel.textContent=floorNames[currentFloor]+" · X "+p.x.toFixed(1)+" · Z "+p.z.toFixed(1);}
 requestAnimationFrame(animate);setCameraMode("third");
