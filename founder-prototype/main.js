@@ -38,7 +38,7 @@ const groundCollision=[
  rect(7.25,9.55,-5.35,-4.35),rect(6.1,7.5,-3.25,-1.95),
  rect(7.35,8.65,3.35,4.65),rect(-8.65,-7.35,3.35,4.65),
  rect(-1.35,1.35,4.0,5.4),rect(.35,3.85,1.1,2.9),
- rect(-.32,-.08,-3.0,2.4),
+ rect(-.32,-.08,-3.05,-1.05),rect(-.32,-.08,.45,2.45),
  ...elevatorCollision
 ];
 let currentFloor=0;
@@ -109,7 +109,7 @@ for(const x of [.9,3.3])for(const z of [1.5,2.5])box(.12,.9,.12,darkMat,x,.45,z)
 for(const x of [.65,3.55])for(const z of [1.15,2.85]){box(.72,.85,.72,darkMat,x,.43,z);box(.72,.12,.72,mat(0x4d5852),x,.9,z);}
 box(2.6,.08,.12,goldMat,2.1,1.08,2);
 // Glass divider and decorative planters.
-box(.12,2.5,5.4,glassMat,-.2,1.25,-.3);box(.16,.1,5.5,goldMat,-.2,2.5,-.3);
+box(.12,2.5,1.9,glassMat,-.2,1.25,-2.05);box(.12,2.5,1.9,glassMat,-.2,1.25,1.45);box(.16,.1,1.95,goldMat,-.2,2.5,-2.05);box(.16,.1,1.95,goldMat,-.2,2.5,1.45);
 plant(-9,-6,.95);plant(-9,5,1.05);plant(9,5,1.05);plant(-.9,-6,.8);
 plant(10,-1,.8);
 // Lighting fixtures: emissive strips, deliberately no expensive real-time shadows.
