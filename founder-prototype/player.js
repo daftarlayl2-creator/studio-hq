@@ -2,7 +2,7 @@ const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 
 export function createPlayer(THREE, scene, camera) {
   const group = new THREE.Group();
-  group.position.set(0,0,2.5);
+  group.position.set(-3,0,2.5);
   scene.add(group);
 
   const skin = new THREE.MeshStandardMaterial({color:0xb98262,roughness:.95});
@@ -84,12 +84,12 @@ export function createPlayer(THREE, scene, camera) {
     leftLeg.rotation.x=-swing;
     rightLeg.rotation.x=swing;
 
-    const eyeY=group.position.y+(cameraMode==="first"?1.55:1.48);
+    const eyeY=group.position.y+(cameraMode==="first"?1.58:1.48);
     const target=new THREE.Vector3(group.position.x,eyeY,group.position.z);
     if(cameraMode==="first"){
       group.visible=false;
       camera.position.copy(target);
-      camera.rotation.order="YXZ";camera.rotation.y=yaw;camera.rotation.x=-pitch;
+      camera.up.set(0,1,0);camera.rotation.order="YXZ";camera.rotation.z=0;camera.rotation.y=yaw;camera.rotation.x=-pitch;
     }else{
       group.visible=true;
       const distance=4.3;
@@ -102,6 +102,6 @@ export function createPlayer(THREE, scene, camera) {
       camera.lookAt(target.x,target.y+.15,target.z);
     }
   }
-  function reset(){group.position.set(0,0,2.5);yaw=0;pitch=0;verticalVelocity=0;grounded=true;}
+  function reset(){group.position.set(-3,0,2.5);yaw=0;pitch=0;verticalVelocity=0;grounded=true;}
   return {update,reset,setCameraMode,get cameraMode(){return cameraMode;},get position(){return group.position;}};
 }
