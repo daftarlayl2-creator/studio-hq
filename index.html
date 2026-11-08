@@ -204,6 +204,20 @@ async function doLogin(){
  }catch(e){errorEl.textContent=e.message||"Sign-in failed."}
  finally{if(button){button.disabled=false;button.textContent="Sign in"}}
 }
+async function doRequestPasswordReset(){
+ const email=document.getElementById("loginEmail")?.value.trim();
+ const errorEl=document.getElementById("loginError");
+ const button=document.getElementById("forgotPasswordBtn");
+ if(!email){errorEl.textContent="Enter your email address first.";return}
+ button.disabled=true;button.textContent="Sending reset email…";errorEl.textContent="";
+ try{
+  const client=getAuthClient();if(!client)throw new Error("Supabase client is not ready.");
+  const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+"/"});
+  if(error)throw error;
+  errorEl.textContent="";errorEl.className="auth-success";errorEl.textContent="If an account exists for this email, a password reset link has been sent.";
+ }catch(e){errorEl.className="auth-error";errorEl.textContent=e.message||"Could not send a reset email."}
+ finally{if(button){button.disabled=false;button.textContent="Forgot password?"}}
+}
 async function doUpdatePassword(){
  const password=document.getElementById("newPassword")?.value||"";
  const confirmation=document.getElementById("confirmPassword")?.value||"";
@@ -270,8 +284,9 @@ function draw(){
  }
  if(!SESSION){
   document.getElementById("logout").style.display="none";
-  panel.innerHTML='<div class="auth-card"><h2>Studio HQ Login</h2><p>Sign in with your invited account to access the private agent workspace.</p>'+(AUTH_NOTICE?'<p class="auth-success" role="status">'+esc(AUTH_NOTICE)+'</p>':'')+'<label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" placeholder="you@example.com"><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Your password"><button class="btn" id="loginBtn" style="width:100%">Sign in</button><p id="loginError" class="auth-error" role="alert"></p></div>';
+  panel.innerHTML='<div class="auth-card"><h2>Studio HQ Login</h2><p>Sign in with your invited account to access the private agent workspace.</p>'+(AUTH_NOTICE?'<p class="auth-success" role="status">'+esc(AUTH_NOTICE)+'</p>':'')+'<label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" placeholder="you@example.com"><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Your password"><button class="btn" id="loginBtn" style="width:100%">Sign in</button><button class="btn" id="forgotPasswordBtn" type="button" style="width:100%;margin-top:10px;background:transparent;border:1px solid #ffc400;color:var(--gold)">Forgot password?</button><p id="loginError" class="auth-error" role="alert"></p></div>';
   document.getElementById("loginBtn").onclick=doLogin;
+  document.getElementById("forgotPasswordBtn").onclick=doRequestPasswordReset;
   document.getElementById("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
   hint.textContent=AUTH_READY?"Sign in required":"Checking secure session…";
   return;
