@@ -39,6 +39,7 @@ h1{margin:0;font-size:21px;font-weight:800;background:linear-gradient(135deg,#ff
 .auth-card label{display:block;margin:14px 0 5px;color:#b9c4cc;font-size:12px}
 .auth-card input{width:100%;padding:12px;border-radius:8px;border:1px solid #39434d;background:#080c11;color:#fff;font:14px Archivo,sans-serif}
 .auth-error{color:#ff7777!important;min-height:18px}
+.auth-success{color:#3ad17a!important;min-height:18px}
 
 .legend{display:flex;gap:12px;margin:0 18px 12px;font-size:12px;color:var(--muted)}
 .legend span{display:flex;align-items:center;gap:4px}
@@ -164,7 +165,7 @@ A.forEach((d,i)=>{const hx=XS[i],hz=ZS[i],col=d[3],mc=M(col,0,.4),wm=M(0xe8ecef,
 const ring=new T.Mesh(new T.RingGeometry(.55,.7,32).rotateX(-Math.PI/2),new T.MeshBasicMaterial({color:0xffc400}));ring.position.y=.04;
 var cur=null,paused=false,CFG=null,editing=false;
 try{CFG=JSON.parse(localStorage.getItem("shq")||"null")}catch(e){}
-let AUTH=null,SESSION=null,AUTH_READY=false;
+let AUTH=null,SESSION=null,AUTH_READY=false,RECOVERY_MODE=false,AUTH_NOTICE="";
 function getAuthClient(){
  if(!CFG||!window.supabase||!window.supabase.createClient)return null;
  if(!AUTH)AUTH=window.supabase.createClient(CFG.url,CFG.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
@@ -176,7 +177,9 @@ async function initAuth(){
  try{
   client.auth.onAuthStateChange((event,session)=>{
    SESSION=session||null;
-   if(event==="SIGNED_OUT"){cur=null;draw()}
+   if(event==="PASSWORD_RECOVERY"){RECOVERY_MODE=true;AUTH_NOTICE=""}
+   if(event==="SIGNED_OUT"){RECOVERY_MODE=false;cur=null}
+   if(event==="PASSWORD_RECOVERY"||event==="SIGNED_OUT")draw();
   });
   const {data,error}=await client.auth.getSession();
   if(error)throw error;
@@ -200,6 +203,43 @@ async function doLogin(){
   SESSION=data.session;draw();pull();
  }catch(e){errorEl.textContent=e.message||"Sign-in failed."}
  finally{if(button){button.disabled=false;button.textContent="Sign in"}}
+}
+async function doRequestPasswordReset(){
+ const email=document.getElementById("loginEmail")?.value.trim();
+ const errorEl=document.getElementById("loginError");
+ const button=document.getElementById("forgotPasswordBtn");
+ if(!email){errorEl.textContent="Enter your email address first.";return}
+ button.disabled=true;button.textContent="Sending reset email…";errorEl.textContent="";
+ try{
+  const client=getAuthClient();if(!client)throw new Error("Supabase client is not ready.");
+  const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+"/"});
+  if(error)throw error;
+  errorEl.textContent="";errorEl.className="auth-success";errorEl.textContent="If an account exists for this email, a password reset link has been sent.";
+ }catch(e){errorEl.className="auth-error";errorEl.textContent=e.message||"Could not send a reset email."}
+ finally{if(button){button.disabled=false;button.textContent="Forgot password?"}}
+}
+async function doUpdatePassword(){
+ const password=document.getElementById("newPassword")?.value||"";
+ const confirmation=document.getElementById("confirmPassword")?.value||"";
+ const errorEl=document.getElementById("recoveryError");
+ const button=document.getElementById("updatePasswordBtn");
+ if(!errorEl||!button)return;
+ errorEl.textContent="";
+ if(password.length<8){errorEl.textContent="Use at least 8 characters for your new password.";return}
+ if(password!==confirmation){errorEl.textContent="The passwords do not match.";return}
+ button.disabled=true;button.textContent="Updating password…";
+ try{
+  const client=getAuthClient();if(!client)throw new Error("Supabase client is not ready.");
+  if(!SESSION)throw new Error("Your recovery session has expired. Request a new reset email.");
+  const {error}=await client.auth.updateUser({password});
+  if(error)throw error;
+  RECOVERY_MODE=false;
+  AUTH_NOTICE="Your password has been updated. Sign in with your new password.";
+  const {error:signOutError}=await client.auth.signOut();
+  if(signOutError)throw signOutError;
+  SESSION=null;cur=null;draw();
+ }catch(e){errorEl.textContent=e.message||"Could not update password."}
+ finally{if(button){button.disabled=false;button.textContent="Update password"}}
 }
 async function doLogout(){
  const client=getAuthClient();
@@ -229,10 +269,24 @@ document.getElementById("taskModal").addEventListener("click",e=>{if(e.target.id
 addEventListener("keydown",e=>{if(e.key==="Escape")closeTaskDetails()});
 function draw(){
  if(!CFG||editing){panel.innerHTML='<h2>Connect your data</h2><p class="meta">Paste your Supabase Project URL and publishable (public) key. Never use a service-role key here.</p><input id="u" placeholder="https://xxxx.supabase.co" value="'+esc(CFG?CFG.url:"")+'"><input id="k" placeholder="anon or publishable key" value="'+esc(CFG?CFG.key:"")+'"><button class="btn" id="sv">Save and connect</button>';document.getElementById("sv").onclick=()=>{const u=document.getElementById("u").value.trim().replace(/\/+$/,""),k=document.getElementById("k").value.trim();if(!/^https:\/\//.test(u)||!k){hint.textContent="Enter a valid https URL and a key";return}CFG={url:u,key:k};try{localStorage.setItem("shq",JSON.stringify(CFG))}catch(e){}editing=false;draw();pull()};return}
+ if(RECOVERY_MODE){
+  document.getElementById("logout").style.display="none";
+  if(!SESSION){
+   panel.innerHTML='<div class="auth-card"><h2>Recovery session unavailable</h2><p>The reset link could not establish a valid recovery session or has expired. Request a new password reset email and open its newest link in this browser.</p><p class="auth-error" role="alert">No active password-recovery session was found.</p></div>';
+   hint.textContent="Password recovery needs a fresh link";
+   return;
+  }
+  panel.innerHTML='<div class="auth-card"><h2>Set a new password</h2><p>Choose a new password for your Studio HQ account. Use at least 8 characters.</p><label for="newPassword">New password</label><input id="newPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters"><label for="confirmPassword">Confirm new password</label><input id="confirmPassword" type="password" autocomplete="new-password" placeholder="Enter it again"><button class="btn" id="updatePasswordBtn" style="width:100%">Update password</button><p id="recoveryError" class="auth-error" role="alert"></p></div>';
+  document.getElementById("updatePasswordBtn").onclick=doUpdatePassword;
+  document.getElementById("confirmPassword").addEventListener("keydown",e=>{if(e.key==="Enter")doUpdatePassword()});
+  hint.textContent="Secure password recovery";
+  return;
+ }
  if(!SESSION){
   document.getElementById("logout").style.display="none";
-  panel.innerHTML='<div class="auth-card"><h2>Studio HQ Login</h2><p>Sign in with your invited account to access the private agent workspace.</p><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" placeholder="you@example.com"><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Your password"><button class="btn" id="loginBtn" style="width:100%">Sign in</button><p id="loginError" class="auth-error" role="alert"></p></div>';
+  panel.innerHTML='<div class="auth-card"><h2>Studio HQ Login</h2><p>Sign in with your invited account to access the private agent workspace.</p>'+(AUTH_NOTICE?'<p class="auth-success" role="status">'+esc(AUTH_NOTICE)+'</p>':'')+'<label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" placeholder="you@example.com"><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Your password"><button class="btn" id="loginBtn" style="width:100%">Sign in</button><button class="btn" id="forgotPasswordBtn" type="button" style="width:100%;margin-top:10px;background:transparent;border:1px solid #ffc400;color:var(--gold)">Forgot password?</button><p id="loginError" class="auth-error" role="alert"></p></div>';
   document.getElementById("loginBtn").onclick=doLogin;
+  document.getElementById("forgotPasswordBtn").onclick=doRequestPasswordReset;
   document.getElementById("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
   hint.textContent=AUTH_READY?"Sign in required":"Checking secure session…";
   return;
