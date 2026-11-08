@@ -27,7 +27,7 @@
 | Executive / 03 | 12.6 m | 4.2 m | Founder, CEO, manager, boardroom |
 | Rooftop | 16.8 m | Open air | Terrace, shaded seating, informal meetings |
 
-The elevator core aligns vertically on every level. The current greybox uses an explicit E-key floor selector and instant floor-height transition for navigation testing. Ground and upper floors have separate collision maps, the lift landing has a west-facing exit, and the ground-floor glass divider has a central passage. A moving elevator animation and walkable stair traversal remain future work.
+The elevator core aligns vertically on every level. The current greybox uses an explicit E-key floor selector and instant floor-height transition for navigation testing. Ground and upper floors have separate collision maps, the lift landing has a west-facing exit, and the ground-floor glass divider has a central passage. A moving elevator animation remains future work. The switchback stairs now support walking up and down between adjacent floors using the visible stair flights.
 
 ## 3. Shared circulation core
 
