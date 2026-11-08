@@ -77,8 +77,8 @@ export function createPlayer(THREE, scene, camera) {
         const nz=group.position.z+sz;
         if(!collides(group.position.x,nz))group.position.z=nz;
       }
-      // Face the same camera-relative direction used by movement.
-      group.rotation.y=Math.PI-yaw;
+      // Turn the avatar toward the actual travel vector (including strafing).
+      group.rotation.y=Math.atan2(fx,fz);
       walkPhase+=dt*(speed>3?12:8);
     }
     if(keys.has("Space")&&grounded){verticalVelocity=5.0;grounded=false;}
