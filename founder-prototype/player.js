@@ -67,11 +67,18 @@ export function createPlayer(THREE, scene, camera) {
       const length=Math.hypot(forward,side)||1;
       const fx=(Math.sin(yaw)*forward+Math.cos(yaw)*side)/length;
       const fz=(-Math.cos(yaw)*forward+Math.sin(yaw)*side)/length;
-      const nx=group.position.x+fx*speed*dt;
-      const nz=group.position.z+fz*speed*dt;
-      if(!collides(nx,group.position.z))group.position.x=nx;
-      if(!collides(group.position.x,nz))group.position.z=nz;
-      group.rotation.y=Math.PI+yaw;
+      // Substep movement to prevent tunnelling through thin collision surfaces.
+      const dx=fx*speed*dt, dz=fz*speed*dt;
+      const steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dz))/.08));
+      for(let i=0;i<steps;i++){
+        const sx=dx/steps, sz=dz/steps;
+        const nx=group.position.x+sx;
+        if(!collides(nx,group.position.z))group.position.x=nx;
+        const nz=group.position.z+sz;
+        if(!collides(group.position.x,nz))group.position.z=nz;
+      }
+      // Face the same camera-relative direction used by movement.
+      group.rotation.y=Math.PI-yaw;
       walkPhase+=dt*(speed>3?12:8);
     }
     if(keys.has("Space")&&grounded){verticalVelocity=5.0;grounded=false;}
@@ -102,6 +109,11 @@ export function createPlayer(THREE, scene, camera) {
       camera.lookAt(target.x,target.y+.15,target.z);
     }
   }
-  function reset(){group.position.set(-3,0,2.5);yaw=0;pitch=0;verticalVelocity=0;grounded=true;}
+  function reset(){
+    // Clear central-west aisle, away from glass and furniture.
+    group.position.set(-3.2,0,2.7);
+    yaw=0;pitch=0;verticalVelocity=0;grounded=true;
+    group.rotation.y=Math.PI;
+  }
   return {update,reset,setCameraMode,get cameraMode(){return cameraMode;},get position(){return group.position;}};
 }
