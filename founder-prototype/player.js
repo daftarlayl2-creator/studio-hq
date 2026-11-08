@@ -26,10 +26,14 @@ export function createPlayer(THREE, scene, camera) {
 
   const obstacles=[
     {minX:-7.8,maxX:-2.2,minZ:-5.55,maxZ:-3.85},
-    {minX:4.0,maxX:6.4,minZ:-5.5,maxZ:-4.25},\n    {minX:7.25,maxX:9.55,minZ:-5.35,maxZ:-4.35},\n    {minX:6.1,maxX:7.5,minZ:-3.25,maxZ:-1.95},
+    {minX:4.0,maxX:6.4,minZ:-5.5,maxZ:-4.25},
+    {minX:7.25,maxX:9.55,minZ:-5.35,maxZ:-4.35},
+    {minX:6.1,maxX:7.5,minZ:-3.25,maxZ:-1.95},
     {minX:7.35,maxX:8.65,minZ:3.35,maxZ:4.65},
     {minX:-8.65,maxX:-7.35,minZ:3.35,maxZ:4.65},
-    {minX:-1.35,maxX:1.35,minZ:4.0,maxZ:5.4},\n    {minX:0.35,maxX:3.85,minZ:1.1,maxZ:2.9},\n    {minX:-0.32,maxX:-0.08,minZ:-3.0,maxZ:2.4}
+    {minX:-1.35,maxX:1.35,minZ:4.0,maxZ:5.4},
+    {minX:0.35,maxX:3.85,minZ:1.1,maxZ:2.9},
+    {minX:-0.32,maxX:-0.08,minZ:-3.0,maxZ:2.4}
   ];
   const radius=.34;
   const keys=new Set();
