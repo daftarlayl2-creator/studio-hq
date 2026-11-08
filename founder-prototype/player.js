@@ -9,16 +9,31 @@ export function createPlayer(THREE, scene, camera) {
   const shirt = new THREE.MeshStandardMaterial({color:0x253b50,roughness:.95});
   const trousers = new THREE.MeshStandardMaterial({color:0x20252c,roughness:1});
   const shoes = new THREE.MeshStandardMaterial({color:0x15191d,roughness:1});
+  const hair = new THREE.MeshStandardMaterial({color:0x252321,roughness:1});
+  const detail = new THREE.MeshStandardMaterial({color:0xd7c6a5,roughness:.8});
   const makePart=(geometry,material,x,y,z)=>{
     const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);group.add(m);return m;
   };
   // Lightweight procedural stand-in. A licensed human GLB can replace this model in a later asset pass.
-  makePart(new THREE.CylinderGeometry(.25,.31,.72,8),shirt,0,1.12,0);
-  makePart(new THREE.SphereGeometry(.19,10,8),skin,0,1.68,0);
+  makePart(new THREE.CylinderGeometry(.25,.31,.72,10),shirt,0,1.12,0);
+  makePart(new THREE.CylinderGeometry(.105,.12,.16,8),skin,0,1.57,0);
+  const head=makePart(new THREE.SphereGeometry(.19,12,10),skin,0,1.76,0);
+  const hairCap=makePart(new THREE.SphereGeometry(.198,12,7,0,Math.PI*2,0,Math.PI*.52),hair,0,1.81,-.005);
+  hairCap.scale.set(1.02,.88,1.02);
+  // Minimal face details make the placeholder read as a person from close range.
+  for(const x of [-.072,.072])makePart(new THREE.SphereGeometry(.018,6,6),detail,x,1.78,.174);
+  makePart(new THREE.SphereGeometry(.025,7,6),skin,0,1.72,.19);
+  makePart(new THREE.SphereGeometry(.035,7,6),hair,-.19,1.76,0);
+  makePart(new THREE.SphereGeometry(.035,7,6),hair,.19,1.76,0);
+  // Shirt collar and a restrained front placket.
+  makePart(new THREE.BoxGeometry(.16,.07,.22),detail,0,1.43,.17);
+  makePart(new THREE.BoxGeometry(.035,.38,.018),detail,0,1.14,.315);
   const leftLeg=makePart(new THREE.CylinderGeometry(.085,.095,.62,7),trousers,-.12,.43,0);
   const rightLeg=makePart(new THREE.CylinderGeometry(.085,.095,.62,7),trousers,.12,.43,0);
-  makePart(new THREE.BoxGeometry(.17,.12,.32),shoes,-.12,.12,.08);
-  makePart(new THREE.BoxGeometry(.17,.12,.32),shoes,.12,.12,.08);
+  makePart(new THREE.BoxGeometry(.19,.13,.34),shoes,-.12,.12,.08);
+  makePart(new THREE.BoxGeometry(.19,.13,.34),shoes,.12,.12,.08);
+  makePart(new THREE.SphereGeometry(.09,7,6),skin,-.32,.78,0);
+  makePart(new THREE.SphereGeometry(.09,7,6),skin,.32,.78,0);
   const leftArm=makePart(new THREE.CylinderGeometry(.075,.09,.62,7),shirt,-.32,1.12,0);
   const rightArm=makePart(new THREE.CylinderGeometry(.075,.09,.62,7),shirt,.32,1.12,0);
   leftArm.rotation.z=-.12;rightArm.rotation.z=.12;
