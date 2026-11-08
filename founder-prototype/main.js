@@ -17,7 +17,7 @@ elevatorPanel.setAttribute("aria-label","Elevator floor selector");
 elevatorPanel.innerHTML='<p class="eyebrow">MOUNADEV HQ · ELEVATOR</p><h2>Select a floor</h2><div class="floor-options"><button data-floor="0">00 <span>Reception</span></button><button data-floor="1">01 <span>Technology</span></button><button data-floor="2">02 <span>Business</span></button><button data-floor="3">03 <span>Executive</span></button><button data-floor="4">R <span>Rooftop</span></button></div><p class="elevator-hint">Press 0–4 or choose a destination. Esc closes.</p>';
 document.querySelector("#app").appendChild(elevatorPanel);
 const floorNames=["GROUND · RECEPTION","01 · TECHNOLOGY","02 · BUSINESS","03 · EXECUTIVE","ROOFTOP"];
-const floorHeights=[0,4.29,8.49,12.69,17.02];
+const floorHeights=[0,4.2,8.4,12.6,16.9];
 const rect=(minX,maxX,minZ,maxZ)=>({minX,maxX,minZ,maxZ});
 const upperFloorCollision=[
  rect(-3.98,-3.82,-6.95,-.85),rect(3.82,3.98,-6.95,-.85),
