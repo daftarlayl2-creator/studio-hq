@@ -12,7 +12,7 @@ Open `/founder-prototype/` on the same static hosting preview that serves the re
 - Mouse: look around (pointer lock on desktop, drag fallback)
 - Shift: run
 - Space: jump
-- V or the camera button: switch first/third person
+- E near the east-side elevator: open the floor selector; choose 0–4 or click a destination (floor changes are instant greybox transitions, not a lift animation)\n- V or the camera button: switch first/third person
 - Reset button: return to spawn
 - Escape: release pointer lock
 
@@ -20,7 +20,7 @@ Open `/founder-prototype/` on the same static hosting preview that serves the re
 
 - The current human-shaped character is a lightweight procedural stand-in, not the final realistic avatar.
 - Replace it with a properly licensed, optimized GLB after selecting an asset and validating its rig/animation compatibility with Three.js r128.
-- The test office has simple rectangular collision boundaries and obstacle footprints; this is not a full physics engine.
+- The ground-floor office has simple obstacle collision; upper-floor furniture collision and stair traversal are not yet implemented. Elevator floor changes are explicit instant transitions for navigation testing, not a simulated moving lift.
 - Desktop controls are the initial target. Mobile touch controls, audio, agent presence, multiplayer, and live integrations are out of scope.
 - Performance must be measured on the target PC; no FPS guarantee is made.
 
