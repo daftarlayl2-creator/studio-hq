@@ -36,6 +36,7 @@ export function createPlayer(THREE, scene, camera) {
     {minX:-0.32,maxX:-0.08,minZ:-3.0,maxZ:2.4}
   ];
   const radius=.34;
+  let activeObstacles=obstacles;
   const keys=new Set();
   let yaw=0, pitch=0, verticalVelocity=0, grounded=true, walkPhase=0;
   let floorHeight=0;
@@ -45,7 +46,7 @@ export function createPlayer(THREE, scene, camera) {
 
   function collides(x,z){
     if(x < -11.25+radius || x > 11.25-radius || z < -7.25+radius || z > 7.25-radius) return true;
-    return obstacles.some(o=>x+radius>o.minX&&x-radius<o.maxX&&z+radius>o.minZ&&z-radius<o.maxZ);
+    return activeObstacles.some(o=>x+radius>o.minX&&x-radius<o.maxX&&z+radius>o.minZ&&z-radius<o.maxZ);
   }
   function pointerMove(e){
     if(document.pointerLockElement===canvas){yaw-=e.movementX*.0022;pitch=clamp(pitch+e.movementY*.0022,-1.15,1.15);}
@@ -113,11 +114,11 @@ export function createPlayer(THREE, scene, camera) {
   function reset(){
     // Clear central-west aisle, away from glass and furniture.
     group.position.set(-3.2,0,2.7);
-    floorHeight=0;yaw=0;pitch=0;verticalVelocity=0;grounded=true;
+    floorHeight=0;activeObstacles=obstacles;yaw=0;pitch=0;verticalVelocity=0;grounded=true;
     group.rotation.y=Math.PI;
   }
-  function setFloor(height,x=9.8,z=0){
-    floorHeight=height;group.position.set(x,height,z);verticalVelocity=0;grounded=true;
+  function setFloor(height,x=9.8,z=0,nextObstacles=obstacles){
+    floorHeight=height;activeObstacles=nextObstacles;group.position.set(x,height,z);verticalVelocity=0;grounded=true;
     keys.clear();
   }
   return {update,reset,setCameraMode,setFloor,get floorHeight(){return floorHeight;},get cameraMode(){return cameraMode;},get position(){return group.position;}};
