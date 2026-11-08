@@ -38,6 +38,7 @@ export function createPlayer(THREE, scene, camera) {
   const radius=.34;
   const keys=new Set();
   let yaw=0, pitch=0, verticalVelocity=0, grounded=true, walkPhase=0;
+  let floorHeight=0;
   let cameraMode="third";
   let dragging=false,lastX=0,lastY=0;
   const canvas=document.querySelector("#world canvas");
@@ -84,7 +85,7 @@ export function createPlayer(THREE, scene, camera) {
     if(keys.has("Space")&&grounded){verticalVelocity=5.0;grounded=false;}
     verticalVelocity-=13.5*dt;
     group.position.y+=verticalVelocity*dt;
-    if(group.position.y<=0){group.position.y=0;verticalVelocity=0;grounded=true;}
+    if(group.position.y<=floorHeight){group.position.y=floorHeight;verticalVelocity=0;grounded=true;}
     const swing=moving?Math.sin(walkPhase)*.16:0;
     leftArm.rotation.x=swing;
     rightArm.rotation.x=-swing;
@@ -112,8 +113,12 @@ export function createPlayer(THREE, scene, camera) {
   function reset(){
     // Clear central-west aisle, away from glass and furniture.
     group.position.set(-3.2,0,2.7);
-    yaw=0;pitch=0;verticalVelocity=0;grounded=true;
+    floorHeight=0;yaw=0;pitch=0;verticalVelocity=0;grounded=true;
     group.rotation.y=Math.PI;
   }
-  return {update,reset,setCameraMode,get cameraMode(){return cameraMode;},get position(){return group.position;}};
+  function setFloor(height,x=9.8,z=0){
+    floorHeight=height;group.position.set(x,height,z);verticalVelocity=0;grounded=true;
+    keys.clear();
+  }
+  return {update,reset,setCameraMode,setFloor,get floorHeight(){return floorHeight;},get cameraMode(){return cameraMode;},get position(){return group.position;}};
 }
