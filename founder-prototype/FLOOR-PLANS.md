@@ -3,12 +3,12 @@
 **Revision:** 1.0  
 **Implementation target:** Founder Player Prototype / Preview branch  
 **Coordinate convention:** X = west/east, Z = north/south, Y = vertical  
-**Design footprint:** 30 m × 24 m per floor; clear floor-to-floor height 4.2 m  
+**Current greybox footprint:** 24 m × 16 m per floor (scaled to the existing ground-floor scene); clear floor-to-floor height 4.2 m  
 **Important:** This is the spatial specification for the next greybox pass. The current playable room remains a single-floor prototype until navigation, collision, and vertical movement are implemented and tested.
 
 ## 1. Building grid
 
-- Building footprint: 30 m east-west × 24 m north-south.
+- Current implementation footprint: 24 m east-west × 16 m north-south. The larger 30 m × 24 m concept is deferred until the ground floor is expanded.
 - Main public entrance: south facade, centered.
 - Main circulation core: slightly east of center; elevator, stairs, and service riser grouped together.
 - Main corridor: minimum 2.2 m clear width.
@@ -27,7 +27,7 @@
 | Executive / 03 | 12.6 m | 4.2 m | Founder, CEO, manager, boardroom |
 | Rooftop | 16.8 m | Open air | Terrace, shaded seating, informal meetings |
 
-The elevator and stair core must align vertically on every level. Floor transitions must be explicit interactions; do not silently teleport the player or imply that floors are connected before the elevator / stairs are functional.
+The elevator core aligns vertically on every level. The current greybox uses an explicit E-key floor selector and instant floor-height transition for navigation testing; a moving elevator animation and walkable stair traversal remain future work.
 
 ## 3. Shared circulation core
 
