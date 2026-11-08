@@ -15,15 +15,14 @@ export function createPlayer(THREE, scene, camera) {
   // Lightweight procedural stand-in. A licensed human GLB can replace this model in a later asset pass.
   makePart(new THREE.CylinderGeometry(.25,.31,.72,8),shirt,0,1.12,0);
   makePart(new THREE.SphereGeometry(.19,10,8),skin,0,1.68,0);
-  makePart(new THREE.CylinderGeometry(.085,.095,.62,7),trousers,-.12,.43,0);
-  makePart(new THREE.CylinderGeometry(.085,.095,.62,7),trousers,.12,.43,0);
+  const leftLeg=makePart(new THREE.CylinderGeometry(.085,.095,.62,7),trousers,-.12,.43,0);
+  const rightLeg=makePart(new THREE.CylinderGeometry(.085,.095,.62,7),trousers,.12,.43,0);
   makePart(new THREE.BoxGeometry(.17,.12,.32),shoes,-.12,.12,.08);
   makePart(new THREE.BoxGeometry(.17,.12,.32),shoes,.12,.12,.08);
   const leftArm=makePart(new THREE.CylinderGeometry(.075,.09,.62,7),shirt,-.32,1.12,0);
   const rightArm=makePart(new THREE.CylinderGeometry(.075,.09,.62,7),shirt,.32,1.12,0);
   leftArm.rotation.z=-.12;rightArm.rotation.z=.12;
-  const head=group.children[1];
-  const nose=makePart(new THREE.SphereGeometry(.045,7,6),skin,0,1.67,.18);
+  makePart(new THREE.SphereGeometry(.045,7,6),skin,0,1.67,.18);
 
   const obstacles=[
     {minX:-7.65,maxX:-2.35,minZ:-5.2,maxZ:-3.8},
@@ -53,7 +52,6 @@ export function createPlayer(THREE, scene, camera) {
   window.addEventListener("keydown",e=>{keys.add(e.code);if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.code))e.preventDefault();});
   window.addEventListener("keyup",e=>keys.delete(e.code));
   window.addEventListener("blur",()=>{keys.clear();dragging=false;});
-  document.addEventListener("mousemove",e=>{if(document.pointerLockElement===canvas)pointerMove(e);});
 
   function setCameraMode(mode){cameraMode=mode;}
   function update(dt){
@@ -69,7 +67,7 @@ export function createPlayer(THREE, scene, camera) {
       const nz=group.position.z+fz*speed*dt;
       if(!collides(nx,group.position.z))group.position.x=nx;
       if(!collides(group.position.x,nz))group.position.z=nz;
-      group.rotation.y=yaw;
+      group.rotation.y=Math.PI+yaw;
       walkPhase+=dt*(speed>3?12:8);
     }
     if(keys.has("Space")&&grounded){verticalVelocity=5.0;grounded=false;}
@@ -77,10 +75,10 @@ export function createPlayer(THREE, scene, camera) {
     group.position.y+=verticalVelocity*dt;
     if(group.position.y<=0){group.position.y=0;verticalVelocity=0;grounded=true;}
     const swing=moving?Math.sin(walkPhase)*.16:0;
-    group.children[5].rotation.x=swing;
-    group.children[6].rotation.x=-swing;
-    group.children[3].rotation.x=-swing;
-    group.children[4].rotation.x=swing;
+    leftArm.rotation.x=swing;
+    rightArm.rotation.x=-swing;
+    leftLeg.rotation.x=-swing;
+    rightLeg.rotation.x=swing;
 
     const eyeY=group.position.y+(cameraMode==="first"?1.55:1.48);
     const target=new THREE.Vector3(group.position.x,eyeY,group.position.z);
