@@ -45,7 +45,7 @@ h1{margin:0;font-size:21px;font-weight:800;background:linear-gradient(135deg,#ff
 .task-list{display:grid;gap:9px}
 .task-card{width:100%;text-align:left;display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:11px;align-items:start;padding:12px;border:1px solid var(--line);border-radius:11px;background:linear-gradient(135deg,#191f26,#11161c);color:var(--ink);cursor:pointer;transition:border-color .18s,transform .18s,background .18s}
 .task-card:hover{transform:translateY(-1px);background:#1b232b}
-.task-card.done{border-left:3px solid var(--up)}.task-card.progress{border-left:3px solid var(--warn)}.task-card.failed{border-left:3px solid var(--danger)}
+.task-card.done{border-left:3px solid var(--up)}.task-card.progress{border-left:3px solid var(--warn)}.task-card.failed{border-left:3px solid var(--danger)}.task-card.neutral{border-left:3px solid #687581}
 .task-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;background:var(--muted)}
 .task-card.done .task-dot{background:var(--up);box-shadow:0 0 10px #3ad17a66}
 .task-card.progress .task-dot{background:var(--warn);box-shadow:0 0 10px #f0b64a66}
@@ -55,7 +55,7 @@ h1{margin:0;font-size:21px;font-weight:800;background:linear-gradient(135deg,#ff
 .task-state{font-size:10px;font-weight:800;letter-spacing:.04em;padding:4px 7px;border-radius:99px;white-space:nowrap}
 .task-card.done .task-state{color:var(--up);background:#3ad17a16}
 .task-card.progress .task-state{color:var(--warn);background:#f0b64a18}
-.task-card.failed .task-state{color:var(--danger);background:#ff555518}
+.task-card.failed .task-state{color:var(--danger);background:#ff555518}.task-card.neutral .task-dot{background:#687581}.task-card.neutral .task-state{color:#aab4bd;background:#68758120}
 .task-empty{padding:16px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);font-size:13px;text-align:center}
 #taskModal{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;padding:18px;background:#020407c9;backdrop-filter:blur(9px)}
 #taskModal.open{display:flex}
@@ -180,7 +180,7 @@ function draw(){
  if(!CFG||editing){panel.innerHTML='<h2>Connect your data</h2><p class="meta">Paste your Supabase Project URL and the anon (public) key. They stay in this browser only.</p><input id="u" placeholder="https://xxxx.supabase.co" value="'+esc(CFG?CFG.url:"")+'"><input id="k" placeholder="anon or publishable key" value="'+esc(CFG?CFG.key:"")+'"><button class="btn" id="sv">Save and connect</button>';document.getElementById("sv").onclick=()=>{const u=document.getElementById("u").value.trim().replace(/\/+$/,""),k=document.getElementById("k").value.trim();if(!/^https:\/\//.test(u)||!k){hint.textContent="Enter a valid https URL and a key";return}CFG={url:u,key:k};try{localStorage.setItem("shq",JSON.stringify(CFG))}catch(e){}editing=false;draw();pull()};return}
  if(!cur){panel.innerHTML='<h2>Pick an agent</h2><p class="meta">Tap anyone in the studio to see their tasks and activity.</p>';return}
  const st=cur.status,s=st==="working"?"up":"warn";
- const current=cur.task?'<button class="task-card '+(st==="working"||st==="waiting"?"progress":"done")+'" data-task-index="-1"><span class="task-dot"></span><span class="task-copy"><span class="task-title">'+esc(cur.task)+'</span><span class="task-sub">Current task · '+esc(ago(cur.upd))+'</span></span><span class="task-state">'+(st==="working"?"IN PROGRESS":st==="waiting"?"WAITING":"CURRENT")+'</span></button>':"";
+ const current=cur.task?'<button class="task-card '+(st==="working"||st==="waiting"?"progress":"neutral")+'" data-task-index="-1"><span class="task-dot"></span><span class="task-copy"><span class="task-title">'+esc(cur.task)+'</span><span class="task-sub">Current task · '+esc(ago(cur.upd))+'</span></span><span class="task-state">'+(st==="working"?"IN PROGRESS":st==="waiting"?"WAITING":"STANDING TASK")+'</span></button>':"";
  const history=cur.log.length?cur.log.map((l,i)=>{const tone=taskTone(l.kind);return '<button class="task-card '+tone+'" data-task-index="'+i+'"><span class="task-dot"></span><span class="task-copy"><span class="task-title">'+esc(l.m)+'</span><span class="task-sub">'+esc(l.t||"")+'</span></span><span class="task-state">'+taskLabel(l.kind)+'</span></button>'}).join(""):'<div class="task-empty">No task history recorded yet.</div>';
  panel.innerHTML='<h2><span>'+esc(cur.n)+'</span><span class="badge">'+esc(cur.r)+'</span></h2><p class="meta">'+(st==="working"?"Working":st==="waiting"?"Waiting": "Idle")+', updated '+ago(cur.upd)+'</p><div class="task">'+(cur.task?esc(cur.task):"No current task")+'</div><div class="prog"><i class="'+s+'" style="width:'+cur.pr+'%"></i></div><div class="task-head"><h3>Task history</h3><span class="task-count">'+cur.log.length+' RECORDS</span></div><div class="task-list" id="taskList">'+current+history+'</div>';
  panel.querySelectorAll("[data-task-index]").forEach(el=>el.addEventListener("click",()=>openTaskDetails(Number(el.dataset.taskIndex))));
