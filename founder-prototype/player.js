@@ -76,7 +76,7 @@ export function createPlayer(THREE, scene, camera) {
       // Match the top surfaces of the 12 physical treads (0.29m spacing, 0.175m rise).
       if(onFirstFlight)candidates.push(base+.24+clamp((z+2.85)/.29,0,11)*.175);
       if(onLanding)candidates.push(base+2.2);
-      if(onSecondFlight)candidates.push(base+2.34+clamp((.34-z)/.29,0,11)*.175);
+      if(onSecondFlight)candidates.push(base+2.2+clamp((.34-z)/.29,0,11)*(1.92/11));
       const nextDeck=base+4.2;
       if(group.position.y>=nextDeck-.58&&group.position.y<=nextDeck+.58)
         candidates.push(nextDeck);
