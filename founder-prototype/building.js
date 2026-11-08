@@ -28,7 +28,8 @@ export function createBuilding(THREE, scene) {
     // Low room dividers establish four readable team zones.
     addBox(.16,2.35,6.1,graphite,-3.9,y+1.25,-3.9);
     addBox(.16,2.35,6.1,graphite,3.9,y+1.25,-3.9);
-    addBox(7.8,2.35,.16,graphite,0,y+1.25,-.65);
+    addBox(3.0,2.35,.16,graphite,-2.4,y+1.25,-.65);
+    addBox(3.0,2.35,.16,graphite,2.4,y+1.25,-.65);
     // Door gaps are left around the central passage.
     addBox(6.8,.16,.16,bronze,0,y+2.48,-.65);
     // Simple desks / meeting tables, intentionally low polygon.
@@ -50,7 +51,13 @@ export function createBuilding(THREE, scene) {
   for(const x of [8.8,10.8])for(const z of [-1.25,1.25])addBox(.18,16.6,.18,bronze,x,8.25,z);
   addBox(2.2,16.4,.12,glass,9.8,8.25,-1.25);
   addBox(2.2,16.4,.12,glass,9.8,8.25,1.25);
-  addBox(.12,16.4,2.5,glass,8.8,8.25,0);
+  // West-side elevator landing doors: leave a clear opening at every floor.
+  for(let level=0;level<4;level++){
+    const baseY=level*4.2;
+    for(const z of [-.92,.92])addBox(.12,3.45,.66,glass,8.8,baseY+1.82,z);
+    addBox(.12,.18,1.18,bronze,8.8,baseY+3.52,0);
+  }
+  // East shaft wall remains closed for a safe, readable cutaway.
   addBox(.12,16.4,2.5,glass,10.8,8.25,0);
   // Switchback stair flights beside the lift core. These are visual greybox steps;
   // walking / floor transitions are deliberately not enabled in this pass.
