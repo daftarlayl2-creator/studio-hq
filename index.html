@@ -34,6 +34,12 @@ h1{margin:0;font-size:21px;font-weight:800;background:linear-gradient(135deg,#ff
 .btn{margin-top:8px;padding:10px 16px;border-radius:8px;border:0;background:var(--gold);color:#111;font:700 14px Archivo,system-ui,sans-serif;cursor:pointer;transition:transform .1s}
 .btn:hover{transform:scale(1.02)}.btn:active{transform:scale(.98)}
 .note{margin:0 18px 18px;color:var(--muted);font-size:12px;line-height:1.5}
+.auth-card{max-width:440px;margin:7vh auto;padding:26px;background:linear-gradient(145deg,#171e26,#10151b);border:1px solid #3a4652;border-radius:16px;box-shadow:0 20px 70px #0008}
+.auth-card h2{margin:0 0 8px}.auth-card p{color:var(--muted);font-size:13px;line-height:1.6}
+.auth-card label{display:block;margin:14px 0 5px;color:#b9c4cc;font-size:12px}
+.auth-card input{width:100%;padding:12px;border-radius:8px;border:1px solid #39434d;background:#080c11;color:#fff;font:14px Archivo,sans-serif}
+.auth-error{color:#ff7777!important;min-height:18px}
+
 .legend{display:flex;gap:12px;margin:0 18px 12px;font-size:12px;color:var(--muted)}
 .legend span{display:flex;align-items:center;gap:4px}
 .legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
@@ -71,7 +77,7 @@ h1{margin:0;font-size:21px;font-weight:800;background:linear-gradient(135deg,#ff
 </style>
 </head>
 <body>
-<header><h1>Studio HQ</h1><p class="sub">AI Agent Office — 15 agents building apps & websites for clients</p></header>
+<header><div><h1>Studio HQ</h1><p class="sub">AI Agent Office — secure workspace</p></div><button class="btn" id="logout" style="display:none;margin:0">Sign out</button></header>
 <div id="view">
   <div class="chips"><span><b id="k1">0</b> done today</span><span><b id="k2">0</b> working</span><span><b id="k3">0</b> waiting</span><span><b id="k4">0</b> idle</span></div>
   <div class="ctl"><button id="bp" aria-label="Pause animation">⏸</button><button id="bi" aria-label="Zoom in">+</button><button id="bo" aria-label="Zoom out">−</button><button id="br" aria-label="Reset view">⟳</button><button id="bs" aria-label="Connection settings">⚙</button></div>
@@ -89,6 +95,7 @@ h1{margin:0;font-size:21px;font-weight:800;background:linear-gradient(135deg,#ff
 </div>
 
 <script src="lib/three.min.js" onerror="var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';document.head.appendChild(s);"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const T=THREE,view=document.getElementById("view"),panel=document.getElementById("panel"),hint=document.getElementById("hint");
 var bi=document.getElementById("bi"),bo=document.getElementById("bo"),br=document.getElementById("br"),bp=document.getElementById("bp"),bs=document.getElementById("bs");
@@ -157,6 +164,46 @@ A.forEach((d,i)=>{const hx=XS[i],hz=ZS[i],col=d[3],mc=M(col,0,.4),wm=M(0xe8ecef,
 const ring=new T.Mesh(new T.RingGeometry(.55,.7,32).rotateX(-Math.PI/2),new T.MeshBasicMaterial({color:0xffc400}));ring.position.y=.04;
 var cur=null,paused=false,CFG=null,editing=false;
 try{CFG=JSON.parse(localStorage.getItem("shq")||"null")}catch(e){}
+let AUTH=null,SESSION=null,AUTH_READY=false;
+function getAuthClient(){
+ if(!CFG||!window.supabase||!window.supabase.createClient)return null;
+ if(!AUTH)AUTH=window.supabase.createClient(CFG.url,CFG.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+ return AUTH;
+}
+async function initAuth(){
+ const client=getAuthClient();
+ if(!client){draw();return}
+ try{
+  const {data,error}=await client.auth.getSession();
+  if(error)throw error;
+  SESSION=data.session||null;
+  AUTH_READY=true;
+  draw();
+  if(SESSION)pull();
+ }catch(e){AUTH_READY=true;SESSION=null;draw();hint.textContent="Authentication setup error: "+(e.message||"unknown")}
+}
+async function doLogin(){
+ const email=document.getElementById("loginEmail")?.value.trim();
+ const password=document.getElementById("loginPassword")?.value||"";
+ const errorEl=document.getElementById("loginError");
+ const button=document.getElementById("loginBtn");
+ if(!email||!password){errorEl.textContent="Enter your email and password.";return}
+ button.disabled=true;button.textContent="Signing in…";errorEl.textContent="";
+ try{
+  const client=getAuthClient();if(!client)throw new Error("Supabase client is not ready.");
+  const {data,error}=await client.auth.signInWithPassword({email,password});
+  if(error)throw error;
+  SESSION=data.session;draw();pull();
+ }catch(e){errorEl.textContent=e.message||"Sign-in failed."}
+ finally{if(button){button.disabled=false;button.textContent="Sign in"}}
+}
+async function doLogout(){
+ const client=getAuthClient();
+ if(client)await client.auth.signOut();
+ SESSION=null;cur=null;draw();hint.textContent="Signed out";
+}
+document.getElementById("logout").onclick=doLogout;
+
 function label(a){const c=a.lc.getContext("2d"),w=a.status==="working",wt=a.status==="waiting";c.clearRect(0,0,256,96);c.fillStyle="rgba(10,12,16,.92)";c.beginPath();c.roundRect?c.roundRect(4,10,248,76,16):c.rect(4,10,248,76);c.fill();c.lineWidth=5;c.strokeStyle=a===cur?"#ffc400":a.css;c.stroke();c.fillStyle=w?"#3ad17a":wt?"#f0b64a":"#6c7780";c.beginPath();c.arc(30,38,9,0,7);c.fill();c.fillStyle="#fff";c.font="800 28px Archivo,sans-serif";c.fillText(a.n,50,46);c.fillStyle="#aab4bd";c.font="500 20px Archivo,sans-serif";c.fillText(a.r+"  "+(w?a.pr+"%":wt?"Waiting":"Idle"),22,76);a.lt.needsUpdate=true}
 const ago=d=>{if(!d)return"never";const s=Math.round((Date.now()-d)/1000);return s<60?"just now":s<3600?Math.floor(s/60)+" min ago":s<86400?Math.floor(s/3600)+" h ago":Math.floor(s/86400)+" d ago"};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -178,6 +225,15 @@ document.getElementById("taskModal").addEventListener("click",e=>{if(e.target.id
 addEventListener("keydown",e=>{if(e.key==="Escape")closeTaskDetails()});
 function draw(){
  if(!CFG||editing){panel.innerHTML='<h2>Connect your data</h2><p class="meta">Paste your Supabase Project URL and the anon (public) key. They stay in this browser only.</p><input id="u" placeholder="https://xxxx.supabase.co" value="'+esc(CFG?CFG.url:"")+'"><input id="k" placeholder="anon or publishable key" value="'+esc(CFG?CFG.key:"")+'"><button class="btn" id="sv">Save and connect</button>';document.getElementById("sv").onclick=()=>{const u=document.getElementById("u").value.trim().replace(/\/+$/,""),k=document.getElementById("k").value.trim();if(!/^https:\/\//.test(u)||!k){hint.textContent="Enter a valid https URL and a key";return}CFG={url:u,key:k};try{localStorage.setItem("shq",JSON.stringify(CFG))}catch(e){}editing=false;draw();pull()};return}
+ if(!SESSION){
+  document.getElementById("logout").style.display="none";
+  panel.innerHTML='<div class="auth-card"><h2>Studio HQ Login</h2><p>Sign in with your invited account to access the private agent workspace.</p><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" placeholder="you@example.com"><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Your password"><button class="btn" id="loginBtn" style="width:100%">Sign in</button><p id="loginError" class="auth-error" role="alert"></p></div>';
+  document.getElementById("loginBtn").onclick=doLogin;
+  document.getElementById("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
+  hint.textContent=AUTH_READY?"Sign in required":"Checking secure session…";
+  return;
+ }
+ document.getElementById("logout").style.display="inline-block";
  if(!cur){panel.innerHTML='<h2>Pick an agent</h2><p class="meta">Tap anyone in the studio to see their tasks and activity.</p>';return}
  const st=cur.status,s=st==="working"?"up":"warn";
  const current=cur.task?'<button class="task-card '+(st==="working"||st==="waiting"?"progress":"neutral")+'" data-task-index="-1"><span class="task-dot"></span><span class="task-copy"><span class="task-title">'+esc(cur.task)+'</span><span class="task-sub">Current task · '+esc(ago(cur.upd))+'</span></span><span class="task-state">'+(st==="working"?"IN PROGRESS":st==="waiting"?"WAITING":"STANDING TASK")+'</span></button>':"";
@@ -185,8 +241,8 @@ function draw(){
  panel.innerHTML='<h2><span>'+esc(cur.n)+'</span><span class="badge">'+esc(cur.r)+'</span></h2><p class="meta">'+(st==="working"?"Working":st==="waiting"?"Waiting": "Idle")+', updated '+ago(cur.upd)+'</p><div class="task">'+(cur.task?esc(cur.task):"No current task")+'</div><div class="prog"><i class="'+s+'" style="width:'+cur.pr+'%"></i></div><div class="task-head"><h3>Task history</h3><span class="task-count">'+cur.log.length+' RECORDS</span></div><div class="task-list" id="taskList">'+current+history+'</div>';
  panel.querySelectorAll("[data-task-index]").forEach(el=>el.addEventListener("click",()=>openTaskDetails(Number(el.dataset.taskIndex))));
 }
-const hdr=()=>({apikey:CFG.key,Authorization:"Bearer "+CFG.key});
-async function pull(){if(!CFG)return;try{const [a,l]=await Promise.all([fetch(CFG.url+"/rest/v1/studio_agents_public?select=*",{headers:hdr()}),fetch(CFG.url+"/rest/v1/studio_agent_log_public?select=*&order=created_at.desc&limit=400",{headers:hdr()})]);if(!a.ok||!l.ok)throw new Error("http");const ag=await a.json(),lg=await l.json(),m0=new Date();m0.setHours(0,0,0,0);const hrs=Array(24).fill(0);let tot=0;lg.forEach(r=>{const d=new Date(r.created_at);if(d>=m0){tot++;hrs[d.getHours()]++}});S.forEach(a=>{const r=ag.find(x=>x.id===a.id);if(r){a.status=r.status;a.task=r.task||"";a.pr=r.progress||0;a.upd=new Date(r.updated_at)}a.log=lg.filter(x=>x.agent_id===a.id).map(x=>({m:x.message,kind:x.kind,t:new Date(x.created_at).toLocaleString()}));label(a)});const wk=S.filter(o=>o.status==="working").length,wt=S.filter(o=>o.status==="waiting").length;const id=S.length-wk-wt;k1.textContent=tot;k2.textContent=wk;k3.textContent=wt;k4.textContent=id;drawScreens(tot,hrs,wk,wt,id);hint.textContent="Live, updated "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"});if(!editing)draw()}catch(e){hint.textContent="Can't reach Supabase, check the URL, the key and that setup.sql ran"}}S.forEach(label);drawScreens(0,Array(24).fill(0),0,0,27);draw();pull();var pullInterval=setInterval(pull,3000);
+const hdr=()=>({apikey:CFG.key,Authorization:"Bearer "+(SESSION?.access_token||""),"Content-Type":"application/json"});
+async function pull(){if(!CFG||!SESSION)return;try{const [a,l]=await Promise.all([fetch(CFG.url+"/rest/v1/rpc/studio_get_agents",{method:"POST",headers:hdr(),body:"{}"}),fetch(CFG.url+"/rest/v1/rpc/studio_get_agent_logs",{method:"POST",headers:hdr(),body:JSON.stringify({p_limit:400})})]);if(!a.ok||!l.ok)throw new Error("http");const ag=await a.json(),lg=await l.json(),m0=new Date();m0.setHours(0,0,0,0);const hrs=Array(24).fill(0);let tot=0;lg.forEach(r=>{const d=new Date(r.created_at);if(d>=m0){tot++;hrs[d.getHours()]++}});S.forEach(a=>{const r=ag.find(x=>x.id===a.id);if(r){a.status=r.status;a.task=r.task||"";a.pr=r.progress||0;a.upd=new Date(r.updated_at)}a.log=lg.filter(x=>x.agent_id===a.id).map(x=>({m:x.message,kind:x.kind,t:new Date(x.created_at).toLocaleString()}));label(a)});const wk=S.filter(o=>o.status==="working").length,wt=S.filter(o=>o.status==="waiting").length;const id=S.length-wk-wt;k1.textContent=tot;k2.textContent=wk;k3.textContent=wt;k4.textContent=id;drawScreens(tot,hrs,wk,wt,id);hint.textContent="Live, updated "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"});if(!editing)draw()}catch(e){hint.textContent="Can't reach Supabase, check the URL, the key and that setup.sql ran"}}S.forEach(label);drawScreens(0,Array(24).fill(0),0,0,27);draw();initAuth();var pullInterval=setInterval(pull,3000);
 function walkTo(a,dt){const p=a.path[0],g=a.g,dx=p.x-g.position.x,dz=p.z-g.position.z,d=Math.hypot(dx,dz);if(d<.12){a.path.shift();return}g.rotation.y=Math.atan2(dx,dz);const s=Math.min(d,2.4*dt);g.position.x+=dx/d*s;g.position.z+=dz/d*s}
 function pose(a,t,sit,walk,busy){const sw=walk?Math.sin(t*9)*.7:0;a.lL.rotation.x=sit?-1.5:sw;a.lR.rotation.x=sit?-1.5:-sw;const k=sit&&busy?.12:0;a.aL.rotation.x=sit?-1.1+Math.sin(t*14+a.ph)*k:-sw;a.aR.rotation.x=sit?-1.1+Math.cos(t*13+a.ph)*k:sw;a.g.position.y=sit?-.12:Math.abs(Math.sin(t*9))*(walk?.05:0)}
 function back(a){a.path=[new T.Vector3(5.6,0,0),new T.Vector3(a.hx,0,0),a.home.clone()];a.mode="back"}
