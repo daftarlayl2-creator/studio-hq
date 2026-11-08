@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090d12">
+  <title>MounaDev HQ — Founder Player Prototype</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main id="app">
+    <div id="world" aria-label="Founder office prototype"></div>
+    <header class="hud">
+      <a class="back" href="../" aria-label="Back to Studio HQ">← Studio HQ</a>
+      <div class="brand"><span class="brand-mark">M</span><span>MOUNADEV <b>HQ</b></span></div>
+      <div class="status"><i></i> LOCAL PROTOTYPE</div>
+    </header>
+    <section class="intro" id="intro">
+      <p class="eyebrow">FOUNDER MODE · PHASE 01</p>
+      <h1>Your office.<br><em>Your point of view.</em></h1>
+      <p class="copy">Explore a small test office in first-person or third-person view. This isolated prototype does not connect to live agents or company data.</p>
+      <button id="start" class="primary">Enter office <span>→</span></button>
+      <p class="keys">WASD move · Mouse look · Shift run · Space jump · V change view · Esc release mouse</p>
+    </section>
+    <aside class="toolbar" aria-label="Prototype controls">
+      <button id="cameraToggle" title="Switch camera (V)">3P</button>
+      <button id="reset" title="Reset position">↺</button>
+    </aside>
+    <div class="crosshair" id="crosshair" aria-hidden="true"></div>
+    <div class="bottom-hud">
+      <span id="cameraLabel">THIRD PERSON</span>
+      <span id="positionLabel">X 0.0 · Z 0.0</span>
+      <span id="fpsLabel">-- FPS</span>
+    </div>
+    <div id="notice" role="status">Click “Enter office” to begin</div>
+    <noscript>This prototype requires JavaScript and WebGL.</noscript>
+  </main>
+  <script src="../lib/three.min.js"></script>
+  <script src="./main.js" type="module"></script>
+</body>
+</html>
