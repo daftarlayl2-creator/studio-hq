@@ -5,6 +5,14 @@ export function createBuilding(THREE, scene) {
   const stone=mat(0x777873),graphite=mat(0x303735),floor=mat(0x383b38),wood=mat(0x604a38),bronze=mat(0xa88755,.58,.25),glass=new THREE.MeshStandardMaterial({color:0x78939a,roughness:.3,transparent:true,opacity:.34});
   const addBox=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);scene.add(o);return o;};
   const cylinder=(rt,rb,h,m,x,y,z,segments=10)=>{const o=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,segments),m);o.position.set(x,y,z);scene.add(o);return o;};
+  // Keep the switchback stairwell open through every upper deck and the rooftop.
+  const addDeckWithStairOpening=(topY,thickness,m)=>{
+    const centerY=topY-thickness/2;
+    addBox(1.75,thickness,15.7,m,-10.975,centerY,0);
+    addBox(18.25,thickness,15.7,m,2.725,centerY,0);
+    addBox(3.7,thickness,4.5,m,-8.25,centerY,-5.6);
+    addBox(3.7,thickness,6.3,m,-8.25,centerY,4.7);
+  };
   const sign=(title,x,y,z)=>{
     const c=document.createElement("canvas");c.width=512;c.height=128;const g=c.getContext("2d");
     g.fillStyle="#202625";g.fillRect(0,0,512,128);g.fillStyle="#a88755";g.fillRect(0,0,8,128);
@@ -20,7 +28,7 @@ export function createBuilding(THREE, scene) {
   for(let i=0;i<levels.length;i++){
     const {y,name,rooms}=levels[i];
     // Slab and restrained bronze edge reveal.
-    addBox(23.7,.18,15.7,floor,0,y-.09,0);
+    addDeckWithStairOpening(y,.18,floor);
     addBox(23.7,.045,.08,bronze,0,y+.11,-7.82);
     // Rear and side walls; south face remains open in this cutaway preview.
     addBox(23.7,3.45,.22,stone,0,y+1.82,-7.82);
@@ -71,7 +79,7 @@ export function createBuilding(THREE, scene) {
   }
   // Rooftop terrace and parapet, with a shaded pergola.
   const roofY=16.8;
-  addBox(23.7,.2,15.7,floor,0,roofY-.1,0);
+  addDeckWithStairOpening(roofY,.2,floor);
   addBox(23.7,1.05,.22,stone,0,roofY+.58,-7.82);
   addBox(23.7,1.05,.22,stone,0,roofY+.58,7.82);
   addBox(.22,1.05,15.7,stone,-11.82,roofY+.58,0);
