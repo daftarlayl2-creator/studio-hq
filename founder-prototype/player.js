@@ -48,7 +48,9 @@ export function createPlayer(THREE, scene, camera) {
     {minX:-8.65,maxX:-7.35,minZ:3.35,maxZ:4.65},
     {minX:-1.35,maxX:1.35,minZ:4.0,maxZ:5.4},
     {minX:0.35,maxX:3.85,minZ:1.1,maxZ:2.9},
-    {minX:-0.32,maxX:-0.08,minZ:-3.0,maxZ:2.4}
+    // Glass divider sections leave a clear central passage between z=-1.05 and z=0.45.
+    {minX:-0.32,maxX:-0.08,minZ:-3.0,maxZ:-1.05},
+    {minX:-0.32,maxX:-0.08,minZ:0.45,maxZ:2.4}
   ];
   const radius=.34;
   let activeObstacles=obstacles;
