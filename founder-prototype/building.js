@@ -48,11 +48,11 @@ export function createBuilding(THREE, scene) {
     addBox(4.3,.08,.16,bronze,7.4,y+2.38,-5.1);
   }
   // Elevator core is represented as a clear vertical architectural landmark.
-  for(const x of [8.8,10.8])for(const z of [-1.25,1.25])addBox(.18,16.6,.18,bronze,x,8.25,z);
-  addBox(2.2,16.4,.12,glass,9.8,8.25,-1.25);
-  addBox(2.2,16.4,.12,glass,9.8,8.25,1.25);
+  for(const x of [8.8,10.8])for(const z of [-1.25,1.25])addBox(.18,20.2,.18,bronze,x,10.0,z);
+  addBox(2.2,20.0,.12,glass,9.8,10.0,-1.25);
+  addBox(2.2,20.0,.12,glass,9.8,10.0,1.25);
   // West-side elevator landing doors: leave a clear opening at every floor.
-  for(let level=0;level<4;level++){
+  for(let level=0;level<5;level++){
     const baseY=level*4.2;
     for(const z of [-.92,.92])addBox(.12,3.45,.66,glass,8.8,baseY+1.82,z);
     addBox(.12,.18,1.18,bronze,8.8,baseY+3.52,0);
