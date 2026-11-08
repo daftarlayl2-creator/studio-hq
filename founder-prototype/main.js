@@ -12,6 +12,7 @@ const positionLabel=document.querySelector("#positionLabel");
 const fpsLabel=document.querySelector("#fpsLabel");
 const crosshair=document.querySelector("#crosshair");
 let active=false;
+let startRequested=false;
 const elevatorPanel=document.createElement("section");
 elevatorPanel.className="elevator-panel hidden";
 elevatorPanel.setAttribute("aria-label","Elevator floor selector");
@@ -54,14 +55,20 @@ const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:"low-pow
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.35));
 renderer.shadowMap.enabled=false;
 mount.appendChild(renderer.domElement);
-// Bind the entry action as soon as the renderer exists, before building/scene setup can fail.
-startButton.addEventListener("click",()=>{
+// Bind entry immediately after renderer creation. Pointer-up also covers touch browsers
+// that do not consistently synthesize a click after activating a button.
+function enterOffice(){
+  if(active||startRequested)return;
+  startRequested=true;
   active=true;
   intro.classList.add("hidden");
   notice.textContent="Arrow keys move · Mouse look · E elevator · V change view";
   renderer.domElement.focus();
   if(renderer.domElement.requestPointerLock&&matchMedia("(pointer:fine)").matches)renderer.domElement.requestPointerLock();
-});
+}
+startButton.type="button";
+startButton.addEventListener("click",enterOffice);
+startButton.addEventListener("pointerup",enterOffice);
 
 scene.add(new THREE.HemisphereLight(0xb3aa98,0x202526,.82));
 const sun=new THREE.DirectionalLight(0xe2c9a0,.42);sun.position.set(-5,10,6);scene.add(sun);
