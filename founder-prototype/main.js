@@ -1,4 +1,5 @@
 import { createPlayer } from "./player.js";
+import { createBuilding } from "./building.js";
 
 const mount=document.querySelector("#world");
 const intro=document.querySelector("#intro");
@@ -85,6 +86,7 @@ const glow=new THREE.MeshStandardMaterial({color:0x9b8059,emissive:0x59462b,emis
 for(const x of [-7,-2,3,8]){box(2.1,.045,.22,glow,x,3.72,0);box(.045,.045,1.5,goldMat,x,3.7,0);}
 // Small floor inlays help orient the player.
 for(const z of [-6,0,6])box(7,.012,.035,goldMat,0,.015,z);
+const buildingLayout=createBuilding(THREE,scene);
 const player=createPlayer(THREE,scene,camera);
 let active=false,last=performance.now(),frameCount=0,fpsStart=last;
 function setCameraMode(mode){player.setCameraMode(mode);cameraLabel.textContent=mode==="first"?"FIRST PERSON":"THIRD PERSON";cameraButton.textContent=mode==="first"?"1P":"3P";crosshair.classList.toggle("visible",mode==="first"&&active);}
