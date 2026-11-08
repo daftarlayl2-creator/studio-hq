@@ -64,14 +64,24 @@ export function createPlayer(THREE, scene, camera) {
     return activeObstacles.some(o=>x+radius>o.minX&&x-radius<o.maxX&&z+radius>o.minZ&&z-radius<o.maxZ);
   }
   function walkableHeight(x,z){
-    // Two switchback ramp surfaces follow the visible stair flights.
-    if(x>=-9.58&&x<=-8.42&&z>=-3.1&&z<=.55)
-      return floorHeight+.24+((z+3.1)/3.65)*2.0;
-    if(x>=-8.52&&x<=-7.98&&z>=.2&&z<=.9)
-      return floorHeight+2.24;
-    if(x>=-8.12&&x<=-6.98&&z>=-3.1&&z<=.55)
-      return floorHeight+2.34+((.55-z)/3.65)*1.93;
-    return floorHeight;
+    // Select the nearest physical deck / stair tread across the stacked switchback flights.
+    const candidates=[floorHeight];
+    for(let level=0;level<4;level++){
+      const base=floorHeight+level*4.2;
+      candidates.push(base+4.2);
+      if(x>=-9.58&&x<=-8.42&&z>=-3.1&&z<=.55)
+        candidates.push(base+.24+((z+3.1)/3.65)*2.0);
+      if(x>=-9.5&&x<=-7.0&&z>=-.08&&z<=1.18)
+        candidates.push(base+2.2);
+      if(x>=-8.12&&x<=-6.98&&z>=-2.85&&z<=.34)
+        candidates.push(base+2.26+((.34-z)/3.19)*1.925);
+    }
+    let nearest=candidates[0],distance=Math.abs(group.position.y-nearest);
+    for(let i=1;i<candidates.length;i++){
+      const next=Math.abs(group.position.y-candidates[i]);
+      if(next<distance){nearest=candidates[i];distance=next;}
+    }
+    return nearest;
   }
   function pointerMove(e){
     if(document.pointerLockElement===canvas){yaw-=e.movementX*.0022;pitch=clamp(pitch+e.movementY*.0022,-1.15,1.15);}
