@@ -43,8 +43,8 @@ export function createPlayer(THREE, scene, camera) {
     return obstacles.some(o=>x+radius>o.minX&&x-radius<o.maxX&&z+radius>o.minZ&&z-radius<o.maxZ);
   }
   function pointerMove(e){
-    if(document.pointerLockElement===canvas){yaw-=e.movementX*.0022;pitch=clamp(pitch-e.movementY*.0022,-1.15,1.15);}
-    else if(dragging){yaw-=(e.clientX-lastX)*.006;pitch=clamp(pitch-(e.clientY-lastY)*.006,-1.15,1.15);lastX=e.clientX;lastY=e.clientY;}
+    if(document.pointerLockElement===canvas){yaw-=e.movementX*.0022;pitch=clamp(pitch+e.movementY*.0022,-1.15,1.15);}
+    else if(dragging){yaw-=(e.clientX-lastX)*.006;pitch=clamp(pitch+(e.clientY-lastY)*.006,-1.15,1.15);lastX=e.clientX;lastY=e.clientY;}
   }
   canvas.addEventListener("pointerdown",e=>{if(document.pointerLockElement!==canvas){dragging=true;lastX=e.clientX;lastY=e.clientY;}});
   window.addEventListener("pointerup",()=>dragging=false);
@@ -85,7 +85,7 @@ export function createPlayer(THREE, scene, camera) {
     if(cameraMode==="first"){
       group.visible=false;
       camera.position.copy(target);
-      camera.rotation.order="YXZ";camera.rotation.y=yaw;camera.rotation.x=pitch;
+      camera.rotation.order="YXZ";camera.rotation.y=yaw;camera.rotation.x=-pitch;
     }else{
       group.visible=true;
       const distance=4.3;
