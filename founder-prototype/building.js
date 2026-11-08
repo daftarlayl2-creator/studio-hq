@@ -58,9 +58,8 @@ export function createBuilding(THREE, scene) {
     addBox(.12,.18,1.18,bronze,8.8,baseY+3.52,0);
   }
   // East shaft wall remains closed for a safe, readable cutaway.
-  addBox(.12,16.4,2.5,glass,10.8,8.25,0);
-  // Switchback stair flights beside the lift core. These are visual greybox steps;
-  // walking / floor transitions are deliberately not enabled in this pass.
+  addBox(.12,20.0,2.5,glass,10.8,10.0,0);
+  // Switchback stair flights beside the lift core. The player controller maps these treads to walkable ramp surfaces.
   for(let level=0;level<4;level++){
     const baseY=level*4.2;
     for(let i=0;i<12;i++){
