@@ -14,21 +14,21 @@ const crosshair=document.querySelector("#crosshair");
 if(!window.THREE){notice.textContent="Three.js could not load. Check the local lib/three.min.js file.";throw new Error("Three.js unavailable");}
 const THREE=window.THREE;
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x9aa9b4);
-scene.fog=new THREE.Fog(0x9aa9b4,24,58);
+scene.background=new THREE.Color(0x35414a);
+scene.fog=new THREE.Fog(0x35414a,24,58);
 const camera=new THREE.PerspectiveCamera(70,1,.1,100);
 const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:"low-power"});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.35));
 renderer.shadowMap.enabled=false;
 mount.appendChild(renderer.domElement);
 
-scene.add(new THREE.HemisphereLight(0xe6f0f7,0x59616a,1.75));
-const sun=new THREE.DirectionalLight(0xffedcf,1.1);sun.position.set(-5,10,6);scene.add(sun);
-const warmFill=new THREE.PointLight(0xf4c978,.55,18);warmFill.position.set(-4,3,-2);scene.add(warmFill);
-const coolFill=new THREE.PointLight(0x83b9d1,.45,16);coolFill.position.set(5,3,2);scene.add(coolFill);
+scene.add(new THREE.HemisphereLight(0xb8c7d1,0x252d34,1.05));
+const sun=new THREE.DirectionalLight(0xffe1b2,.62);sun.position.set(-5,10,6);scene.add(sun);
+const warmFill=new THREE.PointLight(0xf4c978,.28,18);warmFill.position.set(-4,3,-2);scene.add(warmFill);
+const coolFill=new THREE.PointLight(0x83b9d1,.22,16);coolFill.position.set(5,3,2);scene.add(coolFill);
 
 const mat=(color,roughness=.88,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
-const floorMat=mat(0x737b80),wallMat=mat(0xe4e1d8),darkMat=mat(0x26333d),woodMat=mat(0x795b42),goldMat=mat(0xc49a4b,.48,.35);
+const floorMat=mat(0x424b52),wallMat=mat(0x9da4a5),darkMat=mat(0x1b2832),woodMat=mat(0x795b42),goldMat=mat(0xc49a4b,.48,.35);
 const glassMat=new THREE.MeshStandardMaterial({color:0x9ac4d2,roughness:.22,metalness:.12,transparent:true,opacity:.42});
 const trimMat=mat(0xb9b5aa),leafMat=mat(0x426c58),potMat=mat(0x343d43);
 function box(w,h,d,material,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);m.position.set(x,y,z);scene.add(m);return m;}
@@ -81,7 +81,7 @@ box(.12,2.5,5.4,glassMat,-.2,1.25,-.3);box(.16,.1,5.5,goldMat,-.2,2.5,-.3);
 plant(-9,-6,.95);plant(-9,5,1.05);plant(9,5,1.05);plant(-.9,-6,.8);
 plant(10,-1,.8);
 // Lighting fixtures: emissive strips, deliberately no expensive real-time shadows.
-const glow=new THREE.MeshStandardMaterial({color:0xffe6ad,emissive:0xffd58a,emissiveIntensity:.55});
+const glow=new THREE.MeshStandardMaterial({color:0xb99b69,emissive:0x8a6632,emissiveIntensity:.28});
 for(const x of [-7,-2,3,8]){box(2.1,.045,.22,glow,x,3.72,0);box(.045,.045,1.5,goldMat,x,3.7,0);}
 // Small floor inlays help orient the player.
 for(const z of [-6,0,6])box(7,.012,.035,goldMat,0,.015,z);
