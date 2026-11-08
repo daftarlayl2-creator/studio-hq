@@ -11,6 +11,8 @@ const cameraLabel=document.querySelector("#cameraLabel");
 const positionLabel=document.querySelector("#positionLabel");
 const fpsLabel=document.querySelector("#fpsLabel");
 const crosshair=document.querySelector("#crosshair");
+let active=false;
+let startRequested=false;
 const elevatorPanel=document.createElement("section");
 elevatorPanel.className="elevator-panel hidden";
 elevatorPanel.setAttribute("aria-label","Elevator floor selector");
@@ -53,6 +55,21 @@ const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:"low-pow
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.35));
 renderer.shadowMap.enabled=false;
 mount.appendChild(renderer.domElement);
+
+// Register entry as soon as the renderer is ready, before building/player setup.
+// The pointerup fallback also covers touch browsers with inconsistent click synthesis.
+function enterOffice(){
+ if(active||startRequested)return;
+ startRequested=true;
+ active=true;
+ intro.classList.add("hidden");
+ notice.textContent="Arrow keys move · Mouse look · E elevator · V change view";
+ renderer.domElement.focus();
+ if(renderer.domElement.requestPointerLock&&matchMedia("(pointer:fine)").matches)renderer.domElement.requestPointerLock();
+}
+startButton.type="button";
+startButton.addEventListener("click",enterOffice);
+startButton.addEventListener("pointerup",enterOffice);
 
 scene.add(new THREE.HemisphereLight(0xb3aa98,0x202526,.82));
 const sun=new THREE.DirectionalLight(0xe2c9a0,.42);sun.position.set(-5,10,6);scene.add(sun);
@@ -137,11 +154,10 @@ function toggleElevator(){
  }
 }
 elevatorPanel.querySelectorAll("[data-floor]").forEach(button=>button.addEventListener("click",()=>selectFloor(Number(button.dataset.floor))));
-let active=false,last=performance.now(),frameCount=0,fpsStart=last;
+let last=performance.now(),frameCount=0,fpsStart=last;
 function setCameraMode(mode){player.setCameraMode(mode);cameraLabel.textContent=mode==="first"?"FIRST PERSON":"THIRD PERSON";cameraButton.textContent=mode==="first"?"1P":"3P";crosshair.classList.toggle("visible",mode==="first"&&active);}
 function resize(){const w=mount.clientWidth||innerWidth,h=mount.clientHeight||innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);}
 window.addEventListener("resize",resize);resize();
-startButton.addEventListener("click",()=>{active=true;intro.classList.add("hidden");notice.textContent="Arrow keys move · Mouse look · E elevator · V change view";renderer.domElement.focus();if(renderer.domElement.requestPointerLock&&matchMedia("(pointer:fine)").matches)renderer.domElement.requestPointerLock();});
 cameraButton.addEventListener("click",()=>setCameraMode(player.cameraMode==="first"?"third":"first"));
 resetButton.addEventListener("click",()=>{player.reset();currentFloor=0;elevatorPanel.classList.add("hidden");notice.textContent="Position reset · Ground floor";});
 document.addEventListener("pointerlockchange",()=>{if(active&&document.pointerLockElement!==renderer.domElement)notice.textContent="Mouse released · click and drag to look";});
